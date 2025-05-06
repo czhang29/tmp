@@ -1,10 +1,10 @@
-from flask import Flask, render_template, session  # Removed unused imports: request, time
+from flask import Flask, render_template, session, redirect, url_for
 
 app = Flask(__name__)
 
 app.secret_key = 'replace-this-with-a-real-secret-key'
 
-# Define lessons (Only include lessons 1 through 5)
+# Define lessons (Include all lessons 1 through 6)
 lessons = {
     "1": {
         "title": "Introduction",
@@ -42,16 +42,26 @@ lessons = {
           </ul>
         """,
         "image": "images/shoulders_position_image.jpg"
+    },
+    "6": {
+        "title": "Spine",
+        "content": """
+          <ul class="list-unstyled">
+              <li><strong>Natural Curve:</strong> Maintain the natural curves of your spine. Your lower back should have a slight inward curve, while your upper back has a slight outward curve.</li>
+              <li><strong>Upright Posture:</strong> Sit or stand tall, as if a string were pulling the crown of your head toward the ceiling. This helps lengthen your spine and prevent slouching.</li>
+              <li><strong>Core Engagement:</strong> Gently engage your core muscles to support your spine. This doesn't mean tensing rigidly, but maintaining a natural support for your back.</li>
+          </ul>
+        """,
+        "image": "images/spine_position.jpg"
     }
-    # Lessons 6, 7, 8 are removed
 }
 
 # Define total steps for progress calculation
-TOTAL_LEARNING_STEPS = 6 # 5 lessons + 1 practice page
+TOTAL_LEARNING_STEPS = 7 # 6 lessons + 1 practice page
 
 @app.route('/')
 def homepage():
-    # FIX: Clear the learning flow flag when user returns to homepage
+    # Clear the learning flow flag when user returns to homepage
     session.pop('in_learning_flow', None) # Remove the key if it exists, do nothing otherwise
     progress_percent = 0
     return render_template('homepage.html', progress_percent=progress_percent)
@@ -84,6 +94,11 @@ def learn(lesson_number):
                            lessons=lessons,
                            progress_percent=progress_percent)
 
+@app.route('/spine')
+def spine():
+    progress_percent = min(round((6 / TOTAL_LEARNING_STEPS) * 100), 100) if session.get('in_learning_flow') else 0
+    return render_template('spine.html', progress_percent=progress_percent)
+
 @app.route('/practice')
 def practice():
     progress_percent = 0 # Default
@@ -95,5 +110,22 @@ def practice():
 
     return render_template('practice.html', progress_percent=progress_percent)
 
-if __name__ == '__main__':
-    app.run(debug=True, host='127.0.0.1', port=5001)
+@app.route('/practice/head_neck')
+def practice_head_neck():
+    progress_percent = 0
+    if session.get('in_learning_flow'):
+        progress_percent = min(round((4 / TOTAL_LEARNING_STEPS) * 100), 100)
+    
+    session['practice_focus'] = 'head_neck'
+    return render_template('practice_focused.html', 
+                           focus="Head & Neck", 
+                           title="Head & Neck Practice", 
+                           progress_percent=progress_percent)
+
+@app.route('/practice/shoulders')
+def practice_shoulders():
+    progress_percent = 0
+    if session.get('in_learning_flow'):
+        progress_percent = min(round((5 / TOTAL_LEARNING_STEPS) * 100), 100)
+    
+    session['practice_focus'] = 'shoulders'

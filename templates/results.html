@@ -1,0 +1,217 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 id="lesson_title">Your Posture Results</h2>
+    
+    <div class="results-container">
+        <!-- Results Header with Avatar -->
+        <div class="results-header mb-4 text-center">
+            <div class="avatar-container">
+                <img src="{{ url_for('static', filename='images/posture_avatar.png') }}" alt="Posture Avatar" class="posture-avatar">
+                <div class="avatar-label">Your Current Posture</div>
+            </div>
+            <h3 class="mt-3">{{ session.get('result_title', 'Your Posture Assessment') }}</h3>
+            <p class="lead">{{ session.get('result_subtitle', 'Based on your practice session') }}</p>
+        </div>
+        
+        <!-- Detailed Results -->
+        <div class="detailed-results mb-5">
+            <h4>Detailed Analysis</h4>
+            
+            <!-- Head & Neck Details -->
+            <div class="detail-section mb-4">
+                <h5>Head & Neck Position</h5>
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="metric-card">
+                            <div class="metric-label">Head Alignment</div>
+                            <div class="metric-value">{{ session.get('head_alignment', 'N/A') }}</div>
+                            <div class="metric-bar">
+                                <div class="progress">
+                                    <div class="progress-bar {% if session.get('head_alignment_score', 0) >= 80 %}bg-success{% elif session.get('head_alignment_score', 0) >= 50 %}bg-warning{% else %}bg-danger{% endif %}" 
+                                         role="progressbar" 
+                                         style="width: {{ session.get('head_alignment_score', 0) }}%;" 
+                                         aria-valuenow="{{ session.get('head_alignment_score', 0) }}" 
+                                         aria-valuemin="0" 
+                                         aria-valuemax="100"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="metric-card">
+                            <div class="metric-label">Neck Tension</div>
+                            <div class="metric-value">{{ session.get('neck_tension', 'N/A') }}</div>
+                            <div class="metric-bar">
+                                <div class="progress">
+                                    <div class="progress-bar {% if session.get('neck_tension_score', 0) >= 80 %}bg-success{% elif session.get('neck_tension_score', 0) >= 50 %}bg-warning{% else %}bg-danger{% endif %}" 
+                                         role="progressbar" 
+                                         style="width: {{ session.get('neck_tension_score', 0) }}%;" 
+                                         aria-valuenow="{{ session.get('neck_tension_score', 0) }}" 
+                                         aria-valuemin="0" 
+                                         aria-valuemax="100"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="metric-card">
+                            <div class="metric-label">Gaze Direction</div>
+                            <div class="metric-value">{{ session.get('gaze_direction', 'N/A') }}</div>
+                            <div class="metric-bar">
+                                <div class="progress">
+                                    <div class="progress-bar {% if session.get('gaze_direction_score', 0) >= 80 %}bg-success{% elif session.get('gaze_direction_score', 0) >= 50 %}bg-warning{% else %}bg-danger{% endif %}" 
+                                         role="progressbar" 
+                                         style="width: {{ session.get('gaze_direction_score', 0) }}%;" 
+                                         aria-valuenow="{{ session.get('gaze_direction_score', 0) }}" 
+                                         aria-valuemin="0" 
+                                         aria-valuemax="100"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="recommendation mt-3">
+                    <strong>Recommendation:</strong> {{ session.get('head_neck_recommendation', 'Practice daily chin tucks to strengthen your neck and improve alignment.') }}
+                </div>
+            </div>
+            
+            <!-- Shoulders Details -->
+            <div class="detail-section mb-4">
+                <h5>Shoulders Position</h5>
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="metric-card">
+                            <div class="metric-label">Shoulder Level</div>
+                            <div class="metric-value">{{ session.get('shoulder_level', 'N/A') }}</div>
+                            <div class="metric-bar">
+                                <div class="progress">
+                                    <div class="progress-bar {% if session.get('shoulder_level_score', 0) >= 80 %}bg-success{% elif session.get('shoulder_level_score', 0) >= 50 %}bg-warning{% else %}bg-danger{% endif %}" 
+                                         role="progressbar" 
+                                         style="width: {{ session.get('shoulder_level_score', 0) }}%;" 
+                                         aria-valuenow="{{ session.get('shoulder_level_score', 0) }}" 
+                                         aria-valuemin="0" 
+                                         aria-valuemax="100"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="metric-card">
+                            <div class="metric-label">Shoulder Tension</div>
+                            <div class="metric-value">{{ session.get('shoulder_tension', 'N/A') }}</div>
+                            <div class="metric-bar">
+                                <div class="progress">
+                                    <div class="progress-bar {% if session.get('shoulder_tension_score', 0) >= 80 %}bg-success{% elif session.get('shoulder_tension_score', 0) >= 50 %}bg-warning{% else %}bg-danger{% endif %}" 
+                                         role="progressbar" 
+                                         style="width: {{ session.get('shoulder_tension_score', 0) }}%;" 
+                                         aria-valuenow="{{ session.get('shoulder_tension_score', 0) }}" 
+                                         aria-valuemin="0" 
+                                         aria-valuemax="100"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="metric-card">
+                            <div class="metric-label">Chest Openness</div>
+                            <div class="metric-value">{{ session.get('chest_openness', 'N/A') }}</div>
+                            <div class="metric-bar">
+                                <div class="progress">
+                                    <div class="progress-bar {% if session.get('chest_openness_score', 0) >= 80 %}bg-success{% elif session.get('chest_openness_score', 0) >= 50 %}bg-warning{% else %}bg-danger{% endif %}" 
+                                         role="progressbar" 
+                                         style="width: {{ session.get('chest_openness_score', 0) }}%;" 
+                                         aria-valuenow="{{ session.get('chest_openness_score', 0) }}" 
+                                         aria-valuemin="0" 
+                                         aria-valuemax="100"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="recommendation mt-3">
+                    <strong>Recommendation:</strong> {{ session.get('shoulders_recommendation', 'Perform shoulder rolls and gentle stretches throughout the day to release tension.') }}
+                </div>
+            </div>
+            
+            <!-- Spine Details -->
+            <div class="detail-section mb-4">
+                <h5>Spine Alignment</h5>
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="metric-card">
+                            <div class="metric-label">Spine Curvature</div>
+                            <div class="metric-value">{{ session.get('spine_curvature', 'N/A') }}</div>
+                            <div class="metric-bar">
+                                <div class="progress">
+                                    <div class="progress-bar {% if session.get('spine_curvature_score', 0) >= 80 %}bg-success{% elif session.get('spine_curvature_score', 0) >= 50 %}bg-warning{% else %}bg-danger{% endif %}" 
+                                         role="progressbar" 
+                                         style="width: {{ session.get('spine_curvature_score', 0) }}%;" 
+                                         aria-valuenow="{{ session.get('spine_curvature_score', 0) }}" 
+                                         aria-valuemin="0" 
+                                         aria-valuemax="100"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="metric-card">
+                            <div class="metric-label">Lower Back Support</div>
+                            <div class="metric-value">{{ session.get('lower_back_support', 'N/A') }}</div>
+                            <div class="metric-bar">
+                                <div class="progress">
+                                    <div class="progress-bar {% if session.get('lower_back_support_score', 0) >= 80 %}bg-success{% elif session.get('lower_back_support_score', 0) >= 50 %}bg-warning{% else %}bg-danger{% endif %}" 
+                                         role="progressbar" 
+                                         style="width: {{ session.get('lower_back_support_score', 0) }}%;" 
+                                         aria-valuenow="{{ session.get('lower_back_support_score', 0) }}" 
+                                         aria-valuemin="0" 
+                                         aria-valuemax="100"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="metric-card">
+                            <div class="metric-label">Stability</div>
+                            <div class="metric-value">{{ session.get('stability', 'N/A') }}</div>
+                            <div class="metric-bar">
+                                <div class="progress">
+                                    <div class="progress-bar {% if session.get('stability_score', 0) >= 80 %}bg-success{% elif session.get('stability_score', 0) >= 50 %}bg-warning{% else %}bg-danger{% endif %}" 
+                                         role="progressbar" 
+                                         style="width: {{ session.get('stability_score', 0) }}%;" 
+                                         aria-valuenow="{{ session.get('stability_score', 0) }}" 
+                                         aria-valuemin="0" 
+                                         aria-valuemax="100"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="recommendation mt-3">
+                    <strong>Recommendation:</strong> {{ session.get('spine_recommendation', 'Strengthen your core with regular exercises to improve spine stability.') }}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Overall Recommendation -->
+        <div class="overall-recommendation p-4 mb-4 bg-light border rounded">
+            <h4>Your Personalized Plan</h4>
+            <p>{{ session.get('overall_recommendation', 'Based on your assessment, we recommend the following daily practice:') }}</p>
+            <ul class="recommendation-list">
+                <li>{{ session.get('recommendation_1', 'Practice 5 minutes of posture awareness at your desk') }}</li>
+                <li>{{ session.get('recommendation_2', 'Do 2-3 gentle neck stretches every hour') }}</li>
+                <li>{{ session.get('recommendation_3', 'Strengthen your core with 10 minutes of exercises daily') }}</li>
+            </ul>
+            <p class="mt-3">{{ session.get('recommendation_footer', 'Implement these practices consistently for 2 weeks, then return for another assessment to track your progress.') }}</p>
+        </div>
+        
+        <!-- Navigation Buttons -->
+        <div class="d-flex justify-content-between mt-5 pt-3 border-top">
+            <a href="{{ url_for('feedback_summary') }}" class="btn btn-secondary">&laquo; Back to Summary</a>
+            <a href="{{ url_for('practice') }}" class="btn btn-primary">Start New Practice</a>
+            <a href="{{ url_for('homepage') }}" class="btn btn-outline-secondary">Return Home</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
