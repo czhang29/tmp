@@ -6,10 +6,23 @@ body {
     padding-top: 56px; /* Adjust to match sticky navbar height */
 }
 
-/* Navbar Styling (Add more if needed) */
+/* Navbar Styling */
 .navbar {
-    background-color: darkgrey; /* Consider updating this if needed */
-    /* Ensure navbar height corresponds to body padding-top & sidebar top */
+    background-color: #586f6b; /* Dark sage green - more professional than darkgrey */
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.navbar-brand, .navbar-nav .nav-link {
+    color: #fff !important;
+}
+
+.navbar-brand {
+    font-weight: 700;
+    font-size: 1.5rem;
+}
+
+.navbar-light .navbar-toggler {
+    border-color: rgba(255,255,255,0.5);
 }
 
 /* General Button Styling */
@@ -42,7 +55,6 @@ button,
     border-color: #2f7d32;
 }
 
-
 /* Button Hover Effects */
 .btn-primary:hover,
 .btn-secondary:hover,
@@ -50,97 +62,279 @@ button,
     background-color: #586f6b; /* Darker shade for hover */
     border-color: #586f6b;
 }
-/* Override hover specifically for success if needed */
+
+/* Override hover specifically for success */
 .btn-success:hover {
     background-color: #1d5a20; /* Darker green hover */
     border-color: #1d5a20;
 }
 
-/* Navbar Practice Link Styling
-.practice-link {
-    color: #6c757d;
-    font-family: inherit;
-    text-decoration: none;
-    padding: 5px 10px;
-    border-radius: 5px;
+/* Outline button styles */
+.btn-outline-primary, .btn-outline-secondary {
+    color: #586f6b;
+    border-color: #586f6b;
+    background-color: transparent;
+    transition: all 0.3s ease;
 }
 
-.practice-link:hover {
-    color: #495057;
-    background-color: #e9ecef;
-    text-decoration: none;
-} */
+.btn-outline-primary:hover, .btn-outline-secondary:hover {
+    background-color: #586f6b;
+    color: #fff;
+}
 
-/* Page Specific Title/Text Styles (Ensure IDs are used uniquely per page) */
-#welcome_div { /* Used on homepage */
+/* Card styling for homepage */
+.card {
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+    transition: transform 0.2s, box-shadow 0.2s;
+    border: none;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 12px rgba(0,0,0,0.15);
+}
+
+.card-title {
+    color: #586f6b;
+    font-weight: 600;
+}
+
+/* Page Specific Title/Text Styles */
+#welcome_div {
     font-size: 4em;
     font-weight: bolder;
-    color: black;
-    text-align: center; /* Added for consistency */
-    padding-top: 20px; /* Added spacing */
+    color: #333;
+    text-align: center;
+    padding-top: 20px;
 }
 
-#welcome_message_div { /* Used on homepage */
+#welcome_message_div {
     padding-top: 2%;
     padding-bottom: 2%;
     font-size: 2em;
-    color: rgb(79, 79, 79);
-    text-align: center; /* Added for consistency */
+    color: #4f4f4f;
+    text-align: center;
 }
 
-#lesson_title { /* Used on learn pages */
-    font-size: 3em; /* Slightly smaller than welcome */
+#lesson_title {
+    font-size: 3em;
     font-weight: bolder;
-    color: black;
-    margin-bottom: 20px; /* Added spacing */
+    color: #333;
+    margin-bottom: 20px;
 }
 
-#lesson_text { /* Used on learn pages */
+#lesson_text {
     padding-top: 1%;
     padding-bottom: 2%;
-    font-size: 1.5em; /* Adjusted size */
-    line-height: 1.6; /* Improve readability */
+    font-size: 1.5em;
+    line-height: 1.6;
+}
+
+/* Countdown timer styling */
+.countdown-timer {
+    background-color: #f8f9fa;
+    color: #2f7d32;
+    border-radius: 8px;
+    font-size: 2.5em;
+    font-weight: bold;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    animation: pulse 1s infinite alternate;
+}
+
+@keyframes pulse {
+    from { transform: scale(1); }
+    to { transform: scale(1.05); }
+}
+
+/* Practice duration display */
+.practice-time {
+    font-size: 1.2em;
+    font-weight: bold;
+    color: #586f6b;
+    padding: 8px 0;
+}
+
+/* Feedback Summary and Results Page Styling */
+.feedback-summary-container, .results-container {
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.score-circle {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+    font-size: 1.8em;
+    font-weight: bold;
+    color: white;
+}
+
+.score-excellent {
+    background-color: #4caf50; /* Green */
+}
+
+.score-good {
+    background-color: #ff9800; /* Orange */
+}
+
+.score-needs-work {
+    background-color: #f44336; /* Red */
+}
+
+.overall-score-circle {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+    font-size: 2.5em;
+    font-weight: bold;
+    color: white;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.feedback-tips {
+    margin-top: 15px;
+    padding-left: 20px;
+}
+
+.feedback-tips li {
+    margin-bottom: 8px;
+    position: relative;
+    padding-left: 15px;
+}
+
+.feedback-tips li:before {
+    content: "•";
+    position: absolute;
+    left: 0;
+    color: #586f6b;
+}
+
+/* Results page specific styling */
+.posture-avatar {
+    max-width: 180px;
+    border-radius: 8px;
+    border: 3px solid #586f6b;
+}
+
+.avatar-container {
+    margin-bottom: 20px;
+}
+
+.avatar-label {
+    font-size: 1.2em;
+    margin-top: 10px;
+    color: #586f6b;
+}
+
+.metric-card {
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 15px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.metric-label {
+    font-weight: bold;
+    color: #586f6b;
+    margin-bottom: 5px;
+}
+
+.metric-value {
+    font-size: 1.2em;
+    margin-bottom: 8px;
+}
+
+.metric-bar {
+    height: 12px;
+}
+
+.recommendation {
+    background-color: #f8f9fa;
+    padding: 10px 15px;
+    border-radius: 5px;
+    border-left: 4px solid #2f7d32;
+}
+
+.recommendation strong {
+    color: #2f7d32;
+}
+
+.recommendation-list {
+    list-style-type: none;
+    padding-left: 0;
+}
+
+.recommendation-list li {
+    padding: 8px 0;
+    border-bottom: 1px dotted #dee2e6;
+    position: relative;
+    padding-left: 24px;
+}
+
+.recommendation-list li:before {
+    content: "✓";
+    color: #2f7d32;
+    position: absolute;
+    left: 0;
+    top: 8px;
 }
 
 /* Lesson Image Styling */
 .lesson-image {
     width: 100%;
     max-width: 500px;
-    height: 400px; /* Consistent height */
+    height: 400px;
     object-fit: cover;
     display: block;
-    margin: 20px auto; /* Center with vertical margin */
-    border-radius: 8px; /* Optional: rounded corners */
+    margin: 20px auto;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    border: 2px solid #fff;
 }
 
-/* ---- Body-map layout (Lesson 3) ---- */
+/* Body-map layout (Lesson 3) */
 .body-map {
     position: relative;
     max-width: 650px;
-    margin: 20px auto; /* Center with vertical margin */
+    margin: 20px auto;
 }
 
 .body-map img {
     width: 100%;
     height: auto;
-    display: block; /* Remove potential extra space below image */
+    display: block;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
 }
 
 .body-btn {
     position: absolute;
     width: 36px;
     height: 36px;
-    border: 4px solid #2f7d32; /* Green ring */
+    border: 4px solid #2f7d32;
     border-radius: 50%;
     background: white;
     box-shadow: 0 0 8px rgba(0, 0, 0, .2);
-    transition: background .2s;
-    transform: translate(-50%, -50%); /* Center precisely on position */
+    transition: all 0.3s ease;
+    transform: translate(-50%, -50%);
+    z-index: 10;
 }
 
 .body-btn:hover {
-    background: #2f7d32; /* Fill green on hover */
+    background: #2f7d32;
     cursor: pointer;
+    transform: translate(-50%, -50%) scale(1.15);
 }
 
 .body-label {
@@ -148,45 +342,57 @@ button,
     font-weight: 700;
     font-size: 1.1rem;
     color: #000;
-    transform: translateY(-50%); /* Vertical centering relative to top */
+    transform: translateY(-50%);
     background: #fff;
-    padding: 2px 6px;
-    border-radius: 12px;
+    padding: 4px 10px;
+    border-radius: 20px;
     line-height: 1.2;
     white-space: nowrap;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1); /* Optional subtle shadow */
+    box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+    transition: all 0.3s ease;
+    z-index: 5;
 }
 
-/* --- Precise positions for Body Map elements (adjust if needed) --- */
+.btn-head:hover ~ .lbl-head,
+.btn-shoulders:hover ~ .lbl-shoulders,
+.btn-spine:hover ~ .lbl-spine {
+    background-color: #2f7d32;
+    color: white;
+    transform: translateY(-50%) scale(1.05);
+}
+
+/* Precise positions for Body Map elements */
 .btn-head { top: 17%; left: 49%; }
 .lbl-head { top: 17%; left: 62%; }
 .btn-shoulders { top: 32%; left: 65%; }
 .lbl-shoulders { top: 32%; left: 74%; }
-/* Removed .btn-spine, .lbl-spine, .btn-lungs, .lbl-lungs, .btn-legs, .lbl-legs */
+.btn-spine { top: 50%; left: 49%; }
+.lbl-spine { top: 50%; left: 62%; }
 
-/* --- Practice Page Video/Canvas Styling --- */
+/* Practice Page Video/Canvas Styling */
 #video-container {
-    position: relative; /* Context for canvas overlay */
-    /* width: 640px; */ /* Or use max-width */
-    /* height: 480px; */
-    max-width: 100%; /* Responsive width */
-    margin: 20px auto; /* Center container */
-    border: 1px solid #ccc; /* Optional border */
-    line-height: 0; /* Prevent extra space below video/canvas */
+    position: relative;
+    max-width: 100%;
+    margin: 20px auto;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    line-height: 0;
 }
 
 #video {
     display: block;
-    width: 100%; /* Fill container */
-    height: auto; /* Maintain aspect ratio */
+    width: 100%;
+    height: auto;
 }
 
 #overlay {
     position: absolute;
     top: 0;
     left: 0;
-    width: 100%; /* Match video */
-    height: 100%; /* Match video */
+    width: 100%;
+    height: 100%;
 }
 
 /* Practice Page Feedback Text */
@@ -194,52 +400,61 @@ button,
     margin-top: 15px;
     font-size: 1.2em;
     color: #333;
-    text-align: center; /* Center feedback text */
-    min-height: 1.5em; /* Prevent layout shift */
+    text-align: center;
+    min-height: 1.5em;
+    padding: 10px;
+    background-color: #f8f9fa;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
 }
 
-/* --- Layout for Sidebar and Content --- */
+/* Layout for Sidebar and Content */
 .page-container {
     display: flex;
-    min-height: calc(100vh - 56px); /* Adjust 56px based on actual navbar height */
+    min-height: calc(100vh - 56px);
 }
 
 .progress-sidebar {
-    width: 100px; /* Sidebar width */
-    flex-shrink: 0; /* Prevent sidebar from shrinking */
+    width: 100px;
+    flex-shrink: 0;
     padding: 20px 10px;
-    background-color: #f8f9fa; /* Light background */
+    background-color: #f8f9fa;
     border-right: 1px solid #dee2e6;
     text-align: center;
     position: sticky;
-    top: 56px; /* Must match body padding-top */
-    height: calc(100vh - 56px); /* Full height minus navbar */
-    overflow-y: auto; /* Allow scroll if sidebar content is tall */
+    top: 56px;
+    height: calc(100vh - 56px);
+    overflow-y: auto;
+    transition: width 0.3s ease;
+}
+
+.progress-sidebar:hover {
+    width: 120px;
 }
 
 .main-content {
-    flex-grow: 1; /* Takes remaining space */
-    padding: 20px; /* Padding around main content */
-    background-color: #ddd5d0; /* Match body background */
+    flex-grow: 1;
+    padding: 20px;
+    background-color: #ddd5d0;
 }
 
-/* --- Vertical Progress Bar Styling --- */
+/* Vertical Progress Bar Styling */
 .progress.progress-vertical {
-    width: 25px; /* Width of the track */
+    width: 25px;
     min-height: 200px;
-    height: 60%; /* Adjust as desired */
-    margin: 10px auto; /* Center */
+    height: 60%;
+    margin: 10px auto;
     display: flex;
-    align-items: flex-end; /* Bar grows from bottom */
-    background-color: #e9ecef; /* Track color */
+    align-items: flex-end;
+    background-color: #e9ecef;
     border-radius: 0.375rem;
     overflow: hidden;
 }
 
 .progress.progress-vertical .progress-bar {
-    width: 100%; /* Fill track width */
-    height: 0; /* Initial height, overridden by inline style */
-    background-color: #2f7d32; /* Progress bar fill color (green) */
+    width: 100%;
+    height: 0;
+    background-color: #2f7d32;
     transition: height 0.6s ease;
     display: flex;
     justify-content: center;
@@ -253,22 +468,84 @@ button,
     font-size: 0.9em;
     font-weight: bold;
     color: #333;
-    margin-top: 8px; /* Space below the bar */
+    margin-top: 8px;
 }
 
 .start-practice-container {
-    text-align: center; /* Center the inline-block button */
-    padding: 15px 0;   /* Add some vertical spacing */
-    /* margin-top: 20px; /* Space above this button - already added via class */
+    text-align: center;
+    padding: 15px 0;
 }
 
 /* Container for the bottom Previous/Return Home buttons */
 .bottom-nav-controls {
-    display: flex;              /* Enable Flexbox */
-    justify-content: space-between; /* Push items to opposite ends */
-    align-items: center;        /* Vertically align buttons */
-    padding: 20px 0;            /* Vertical padding */
-    margin-top: 40px;           /* More space above the bottom row - already added via class */
-    border-top: 1px solid #dee2e6; /* Optional separator line */
-    width: 100%;                /* Ensure it spans the width */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 0;
+    margin-top: 40px;
+    border-top: 1px solid #dee2e6;
+    width: 100%;
+}
+
+/* Theme Selection Dropdown */
+.theme-selector {
+    position: absolute;
+    top: 70px;
+    right: 20px;
+    z-index: 100;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    padding: 10px;
+}
+
+/* Media Queries for Responsive Design */
+@media (max-width: 768px) {
+    #welcome_div {
+        font-size: 3em;
+    }
+    
+    #welcome_message_div {
+        font-size: 1.5em;
+    }
+    
+    #lesson_title {
+        font-size: 2.5em;
+    }
+    
+    .progress-sidebar {
+        width: 70px;
+    }
+    
+    .progress-sidebar:hover {
+        width: 90px;
+    }
+    
+    .score-circle, .overall-score-circle {
+        width: 80px;
+        height: 80px;
+        font-size: 1.5em;
+    }
+    
+    .overall-score-circle {
+        width: 120px;
+        height: 120px;
+        font-size: 2em;
+    }
+}
+
+@media (max-width: 576px) {
+    .bottom-nav-controls {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .countdown-timer {
+        font-size: 2em;
+    }
+    
+    #video-container {
+        width: 100% !important;
+        height: auto !important;
+    }
 }

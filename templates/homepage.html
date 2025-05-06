@@ -12,7 +12,46 @@
             </p>
             <img src="{{ url_for('static', filename='images/yogaLogo.jpg') }}" alt="Yoga Logo Image" class="img-fluid mb-3">
         <br>
-        <a class="btn btn-primary btn-lg" href="{{ url_for('learn', lesson_number=1) }}">Start Learning</a>
+        <div class="d-flex justify-content-center gap-4">
+            <a class="btn btn-primary btn-lg" href="{{ url_for('learn', lesson_number=1) }}">Start Learning</a>
+            <a class="btn btn-success btn-lg" href="{{ url_for('practice') }}">Start Practice Now</a>
+        </div>
+        
+        <!-- Quick Access Buttons for Focused Practice -->
+        <div class="focused-practice-links mt-5">
+            <h3 class="mb-4">Practice Specific Areas</h3>
+            <div class="row justify-content-center">
+                <div class="col-md-3 mb-3">
+                    <div class="card h-100">
+                        <img src="{{ url_for('static', filename='images/head_position_image.jpg') }}" class="card-img-top" alt="Head & Neck Practice" style="height: 150px; object-fit: cover;">
+                        <div class="card-body text-center">
+                            <h5 class="card-title">Head & Neck</h5>
+                            <p class="card-text">Focus on proper head alignment and neck positioning.</p>
+                            <a href="{{ url_for('practice_head_neck') }}" class="btn btn-outline-primary">Practice Now</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="card h-100">
+                        <img src="{{ url_for('static', filename='images/shoulders_position_image.jpg') }}" class="card-img-top" alt="Shoulders Practice" style="height: 150px; object-fit: cover;">
+                        <div class="card-body text-center">
+                            <h5 class="card-title">Shoulders</h5>
+                            <p class="card-text">Work on relaxed and balanced shoulder position.</p>
+                            <a href="{{ url_for('practice_shoulders') }}" class="btn btn-outline-primary">Practice Now</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="card h-100">
+                        <img src="{{ url_for('static', filename='images/spine_position.jpg') }}" class="card-img-top" alt="Spine Practice" style="height: 150px; object-fit: cover;">
+                        <div class="card-body text-center">
+                            <h5 class="card-title">Spine</h5>
+                            <p class="card-text">Improve your spine alignment and stability.</p>
+                            <a href="{{ url_for('practice_spine') }}" class="btn btn-outline-primary">Practice Now</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 {% endblock %}
-
