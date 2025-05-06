@@ -6,13 +6,11 @@ Welcome to PerfectPosture, a website designed to help you improve your posture t
 
 - [ ] Replace placeholder images with the desired images.
 - [ ] Add the following pages:
-  - [ ] Spine (refer to the deck)
   - [ ] Practice Feedback Summary: provides users with feedback on their practice (refer to the deck)
   - [ ] Results page: presents final results and possible recommendations to users (refer to the deck)
 - [ ] Integrate real-time feedback practice into the following pages:
   - [ ] Head & Neck Position: ensure feedback focuses solely on the head and neck
   - [ ] Shoulders: ensure feedback focuses solely on the shoulders
-  - [ ] Spine: ensure feedback focuses solely on the spine (side profile)
 - [ ] Implement a countdown timer to allow users to adjust themselves.
 - [ ] Enhance real-time feedback parameters for greater accuracy.
 - [ ] Add a back button so user can go back and forth from pages.
