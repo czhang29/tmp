@@ -3,12 +3,13 @@ console.log('TensorFlow.js version:', tf.version.tfjs);
 
 // Global variables
 let lastFeedbackTime = 0;
-const feedbackInterval = 15000; // 15 seconds in milliseconds (reduced from 30s)
+const feedbackInterval = 15000; // 15 seconds in milliseconds
 let detector = null; // Hold the detector globally
 let animationFrameId = null; // To control the animation loop
-let countdownTimer = null; // For the countdown timer
+let countdownTimer = null; // For the initial countdown timer
+let practiceTimer = null; // For the 2-minute practice timer
 let countdownSeconds = 5; // Default countdown seconds
-let practiceDuration = 0; // Track practice duration in seconds
+let practiceSeconds = 120; // Default practice duration (2 minutes)
 let practiceStartTime = null; // When practice actually started
 let isAnalyzing = false; // Flag to track if analysis is running
 let feedbackHistory = []; // Store feedback history for summary
@@ -22,14 +23,30 @@ const feedback = document.getElementById('feedback');
 const startButton = document.getElementById('start-button');
 const countdownElement = document.getElementById('countdown');
 const endPracticeButton = document.getElementById('end-practice-button');
+const practiceTimerElement = document.getElementById('practice-timer');
 
-// Initialize based on page focus (if set)
+// Initialize based on page focus and duration (if set)
 document.addEventListener('DOMContentLoaded', function() {
     // Check if practice focus is set on the page
     const focusElement = document.getElementById('practice-focus');
     if (focusElement) {
         practiceFocus = focusElement.getAttribute('data-focus') || 'all';
         console.log(`Practice focus set to: ${practiceFocus}`);
+    }
+    
+    // Check if practice duration is set
+    const durationElement = document.getElementById('practice-duration');
+    if (durationElement) {
+        const durationSeconds = parseInt(durationElement.getAttribute('data-seconds'));
+        if (!isNaN(durationSeconds) && durationSeconds > 0) {
+            practiceSeconds = durationSeconds;
+            console.log(`Practice duration set to: ${practiceSeconds} seconds`);
+            
+            // Update the timer display
+            if (practiceTimerElement) {
+                practiceTimerElement.textContent = formatTime(practiceSeconds);
+            }
+        }
     }
     
     // Setup event listeners
@@ -42,7 +59,14 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-// Countdown timer function
+// Helper function to format time as MM:SS
+function formatTime(totalSeconds) {
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+}
+
+// Initial countdown timer before practice starts
 function startCountdown(seconds, onComplete) {
     if (!countdownElement) return;
     
@@ -63,6 +87,26 @@ function startCountdown(seconds, onComplete) {
             }
         } else {
             countdownElement.innerHTML = `Get ready: ${countdownSeconds}`;
+        }
+    }, 1000);
+}
+
+// 2-minute practice timer
+function startPracticeTimer(seconds) {
+    if (!practiceTimerElement) return;
+    
+    let remainingSeconds = seconds;
+    practiceTimerElement.textContent = formatTime(remainingSeconds);
+    
+    practiceTimer = setInterval(() => {
+        remainingSeconds--;
+        
+        if (remainingSeconds <= 0) {
+            clearInterval(practiceTimer);
+            // Auto-redirect to feedback summary when timer ends
+            endPracticeSession();
+        } else {
+            practiceTimerElement.textContent = formatTime(remainingSeconds);
         }
     }, 1000);
 }
@@ -105,11 +149,11 @@ async function setupCamera() {
 
 // Load the Pose Detection model
 async function loadModel() {
-    if (!detector) { // Only load if not already loaded
+     if (!detector) { // Only load if not already loaded
         console.log("Loading MoveNet model...");
         feedback.innerHTML = "Loading posture analysis model...";
         try {
-            // Use MoveNet Lightning for speed, or Thunder for accuracy
+             // Use MoveNet Lightning for speed, or Thunder for accuracy
             const detectorConfig = {modelType: poseDetection.movenet.modelType.SINGLEPOSE_LIGHTNING};
             detector = await poseDetection.createDetector(poseDetection.SupportedModels.MoveNet, detectorConfig);
             console.log("MoveNet model loaded successfully!");
@@ -120,7 +164,7 @@ async function loadModel() {
             detector = null; // Ensure detector is null if loading fails
         }
     }
-    return detector;
+     return detector;
 }
 
 // Detect poses in real-time
@@ -133,22 +177,9 @@ async function detectPose() {
 
     try {
         const poses = await detector.estimatePoses(video, {
-            flipHorizontal: false // Input already flipped via CSS transform: scaleX(-1)
+             flipHorizontal: false // Input already flipped via CSS transform: scaleX(-1)
         });
         const now = Date.now(); // Get current time
-
-        // Update practice duration
-        if (practiceStartTime) {
-            practiceDuration = Math.floor((now - practiceStartTime) / 1000);
-            
-            // Update duration display if element exists
-            const durationElement = document.getElementById('practice-duration');
-            if (durationElement) {
-                const minutes = Math.floor(practiceDuration / 60);
-                const seconds = practiceDuration % 60;
-                durationElement.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
-            }
-        }
 
         // Clear the canvas before drawing
         ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -173,9 +204,6 @@ async function detectPose() {
                         break;
                     case 'shoulders':
                         postureFeedback = generateShouldersFeedback(keypoints);
-                        break;
-                    case 'spine':
-                        postureFeedback = generateSpineFeedback(keypoints);
                         break;
                     default:
                         postureFeedback = generateCompleteFeedback(keypoints);
@@ -392,60 +420,6 @@ function generateShouldersFeedback(keypoints) {
     }
 }
 
-// Generate feedback for spine position (approximated from available keypoints)
-function generateSpineFeedback(keypoints) {
-    let feedbackMessages = [];
-    
-    // Find keypoints needed for spine approximation
-    const leftShoulder = keypoints.find((kp) => kp.name === 'left_shoulder');
-    const rightShoulder = keypoints.find((kp) => kp.name === 'right_shoulder');
-    const leftHip = keypoints.find((kp) => kp.name === 'left_hip');
-    const rightHip = keypoints.find((kp) => kp.name === 'right_hip');
-    
-    // Check if we have the minimum points needed
-    if (leftShoulder && rightShoulder && leftHip && rightHip &&
-        leftShoulder.score > 0.5 && rightShoulder.score > 0.5 &&
-        leftHip.score > 0.5 && rightHip.score > 0.5) {
-        
-        // Calculate midpoints for shoulders and hips
-        const shoulderMidX = (leftShoulder.x + rightShoulder.x) / 2;
-        const shoulderMidY = (leftShoulder.y + rightShoulder.y) / 2;
-        const hipMidX = (leftHip.x + rightHip.x) / 2;
-        const hipMidY = (leftHip.y + rightHip.y) / 2;
-        
-        // Calculate vertical alignment
-        const verticalOffset = Math.abs(shoulderMidX - hipMidX);
-        const verticalThreshold = 25; // Threshold for vertical alignment
-        
-        if (verticalOffset > verticalThreshold) {
-            feedbackMessages.push("Align your spine vertically by stacking shoulders directly over hips.");
-        }
-        
-        // Calculate torso angle to detect slouching or over-arching
-        const torsoAngle = Math.atan2(shoulderMidY - hipMidY, shoulderMidX - hipMidX) * 180 / Math.PI;
-        const idealAngle = 90; // Perfectly vertical
-        const angleThreshold = 10; // Threshold for deviation
-        
-        const angleDiff = Math.abs(torsoAngle - idealAngle);
-        if (angleDiff > angleThreshold) {
-            if (torsoAngle < idealAngle) {
-                feedbackMessages.push("Avoid slouching forward. Sit taller through your spine.");
-            } else {
-                feedbackMessages.push("Avoid over-arching your back. Find a neutral spine position.");
-            }
-        }
-    } else {
-        return "Position yourself to show both shoulders and hips for spine analysis.";
-    }
-    
-    // --- Compile feedback ---
-    if (feedbackMessages.length === 0) {
-        return "Good spine alignment! Maintain this natural position.";
-    } else {
-        return feedbackMessages.join(" "); // Join multiple messages with a space
-    }
-}
-
 // Generate comprehensive feedback for all posture elements
 function generateCompleteFeedback(keypoints) {
     let feedbackMessages = [];
@@ -461,8 +435,6 @@ function generateCompleteFeedback(keypoints) {
     const leftEar = keypoints.find((kp) => kp.name === 'left_ear');
     const rightEar = keypoints.find((kp) => kp.name === 'right_ear');
     const nose = keypoints.find((kp) => kp.name === 'nose');
-    const leftHip = keypoints.find((kp) => kp.name === 'left_hip');
-    const rightHip = keypoints.find((kp) => kp.name === 'right_hip');
 
     // Check shoulder alignment
     if (leftShoulder && rightShoulder && leftShoulder.score > 0.5 && rightShoulder.score > 0.5) {
@@ -488,24 +460,6 @@ function generateCompleteFeedback(keypoints) {
             feedbackMessages.push("Keep your head level (avoid tilting).");
         }
     }
-    
-    // Check spine alignment if possible
-    if (leftShoulder && rightShoulder && leftHip && rightHip &&
-        leftShoulder.score > 0.5 && rightShoulder.score > 0.5 &&
-        leftHip.score > 0.5 && rightHip.score > 0.5) {
-        
-        // Calculate midpoints for shoulders and hips
-        const shoulderMidX = (leftShoulder.x + rightShoulder.x) / 2;
-        const hipMidX = (leftHip.x + rightHip.x) / 2;
-        
-        // Calculate vertical alignment
-        const verticalOffset = Math.abs(shoulderMidX - hipMidX);
-        const verticalThreshold = 35; // Slightly higher threshold for general practice
-        
-        if (verticalOffset > verticalThreshold) {
-            feedbackMessages.push("Align your spine vertically.");
-        }
-    }
 
     // --- Compile feedback ---
     if (feedbackMessages.length === 0) {
@@ -525,7 +479,6 @@ function calculatePostureScores() {
     const scores = {
         head_neck_score: 0,
         shoulders_score: 0,
-        spine_score: 0,
         overall_score: 0
     };
     
@@ -534,8 +487,6 @@ function calculatePostureScores() {
     let goodHeadNeckFeedback = 0;
     let totalShouldersFeedback = 0;
     let goodShouldersFeedback = 0;
-    let totalSpineFeedback = 0;
-    let goodSpineFeedback = 0;
     
     feedbackHistory.forEach(item => {
         // Check if feedback included head/neck issues
@@ -557,16 +508,6 @@ function calculatePostureScores() {
                 goodShouldersFeedback++;
             }
         }
-        
-        // Check if feedback included spine issues
-        if (item.message.includes("spine") || item.message.includes("back") || 
-            item.message.includes("slouch") || item.message.includes("tall")) {
-            totalSpineFeedback++;
-            if (item.message.includes("Good spine") || item.message.includes("Good") || 
-                item.message.includes("Keep it up")) {
-                goodSpineFeedback++;
-            }
-        }
     });
     
     // Calculate scores as percentages
@@ -583,15 +524,9 @@ function calculatePostureScores() {
         scores.shoulders_score = 50;
     }
     
-    if (totalSpineFeedback > 0) {
-        scores.spine_score = Math.round((goodSpineFeedback / totalSpineFeedback) * 100);
-    } else {
-        scores.spine_score = 50;
-    }
-    
-    // Calculate overall score (weighted average)
+    // Calculate overall score (average of head/neck and shoulders)
     scores.overall_score = Math.round(
-        (scores.head_neck_score + scores.shoulders_score + scores.spine_score) / 3
+        (scores.head_neck_score + scores.shoulders_score) / 2
     );
     
     return scores;
@@ -601,21 +536,19 @@ function calculatePostureScores() {
 function generateFeedbackSummary() {
     const scores = calculatePostureScores();
     
-    // Format practice duration
-    const minutes = Math.floor(practiceDuration / 60);
-    const seconds = practiceDuration % 60;
+    // Format practice duration (always 2 minutes or less if ended early)
+    const minutes = Math.floor(practiceSeconds / 60);
+    const seconds = practiceSeconds % 60;
     const durationFormatted = `${minutes}:${seconds.toString().padStart(2, '0')}`;
     
     // Create feedback objects
     let feedbackData = {
         head_neck_score: scores.head_neck_score,
         shoulders_score: scores.shoulders_score,
-        spine_score: scores.spine_score,
         overall_score: scores.overall_score,
         practice_duration: durationFormatted,
         head_neck_feedback: generateHeadNeckSummary(scores.head_neck_score),
         shoulders_feedback: generateShouldersSummary(scores.shoulders_score),
-        spine_feedback: generateSpineSummary(scores.spine_score),
         overall_feedback: generateOverallSummary(scores.overall_score)
     };
     
@@ -633,13 +566,7 @@ function generateFeedbackSummary() {
         shoulder_tension: getShoulderTensionRating(scores.shoulders_score),
         shoulder_tension_score: Math.max(scores.shoulders_score - 10, 0),
         chest_openness: getChestOpennessRating(scores.shoulders_score),
-        chest_openness_score: Math.min(scores.shoulders_score + 5, 100),
-        spine_curvature: getSpineCurvatureRating(scores.spine_score),
-        spine_curvature_score: scores.spine_score,
-        lower_back_support: getLowerBackSupportRating(scores.spine_score),
-        lower_back_support_score: Math.max(scores.spine_score - 15, 0),
-        stability: getStabilityRating(scores.spine_score),
-        stability_score: Math.min(scores.spine_score + 10, 100)
+        chest_openness_score: Math.min(scores.shoulders_score + 5, 100)
     };
     
     return feedbackData;
@@ -682,24 +609,6 @@ function getChestOpennessRating(score) {
     return "Closed";
 }
 
-function getSpineCurvatureRating(score) {
-    if (score >= 80) return "Natural";
-    if (score >= 60) return "Slight Deviation";
-    return "Unnatural";
-}
-
-function getLowerBackSupportRating(score) {
-    if (score >= 80) return "Well Supported";
-    if (score >= 60) return "Moderate Support";
-    return "Needs Support";
-}
-
-function getStabilityRating(score) {
-    if (score >= 80) return "Stable";
-    if (score >= 60) return "Moderately Stable";
-    return "Unstable";
-}
-
 // Generate text summaries based on scores
 function generateHeadNeckSummary(score) {
     if (score >= 80) {
@@ -718,16 +627,6 @@ function generateShouldersSummary(score) {
         return "Your shoulder position is good but could be improved. Remember to keep shoulders down away from your ears and evenly balanced.";
     } else {
         return "Your shoulders show tension and uneven positioning. Practice relaxing them down and back, keeping them level with each other.";
-    }
-}
-
-function generateSpineSummary(score) {
-    if (score >= 80) {
-        return "Your spine maintains its natural curves and good alignment. You sit tall with good core engagement.";
-    } else if (score >= 60) {
-        return "Your spine alignment is adequate but shows some room for improvement. Focus on maintaining a tall, natural position.";
-    } else {
-        return "Your spine alignment needs work. Practice sitting taller and maintaining the natural curves of your spine without slouching or over-arching.";
     }
 }
 
@@ -777,7 +676,7 @@ async function startPosturePractice() {
         console.log("Starting detection loop...");
         feedback.innerHTML = "Starting posture analysis...";
         
-        // Set practice start time
+        // Set practice start flag
         practiceStartTime = Date.now();
         isAnalyzing = true;
 
@@ -791,6 +690,9 @@ async function startPosturePractice() {
             endPracticeButton.style.display = 'inline-block';
         }
         
+        // Start the practice timer (2 minutes)
+        startPracticeTimer(practiceSeconds);
+        
         // Start the detection loop
         detectPose();
     });
@@ -800,6 +702,11 @@ async function startPosturePractice() {
 function endPracticeSession() {
     // Stop analyzing
     isAnalyzing = false;
+    
+    // Stop timers
+    if (practiceTimer) {
+        clearInterval(practiceTimer);
+    }
     
     // Stop camera stream if active
     if (video && video.srcObject) {
@@ -814,26 +721,14 @@ function endPracticeSession() {
     // Calculate final results
     const feedbackData = generateFeedbackSummary();
     
-    // Store in session (will need backend implementation)
-    console.log("Practice session ended. Results:", feedbackData);
-    
     // Show feedback message
     feedback.innerHTML = "Practice complete! Preparing your results...";
     
-    // Redirect to summary page (this would need to be implemented on the backend)
-    // For now, we'll just log the data that would be sent
-    console.log("Would redirect to feedback summary with data:", feedbackData);
+    // In a real implementation, this would be an AJAX call to save data to the server
+    console.log("Practice session ended. Results:", feedbackData);
     
-    // In a real implementation, you would:
-    // 1. Send the data to the server (e.g., via fetch/AJAX)
-    // 2. Store it in the session on the server
-    // 3. Redirect to the summary page
-    
-    // Simulate redirect (in a real app, this would happen after the data is saved)
-    setTimeout(() => {
-        // This would be replaced with a real redirect:
-        window.location.href = "/feedback_summary";
-    }, 2000);
+    // Redirect to feedback summary page
+    window.location.href = "/feedback_summary";
 }
 
 // Cleanup resources when leaving the page
@@ -848,13 +743,12 @@ window.addEventListener('beforeunload', () => {
         cancelAnimationFrame(animationFrameId);
     }
     
-    // Clear countdown timer if running
+    // Clear timers if running
     if (countdownTimer) {
         clearInterval(countdownTimer);
     }
+    
+    if (practiceTimer) {
+        clearInterval(practiceTimer);
+    }
 });
-
-// If startButton exists, set up the click event
-if (startButton) {
-    startButton.addEventListener('click', startPosturePractice);
-}
