@@ -4,7 +4,7 @@ app = Flask(__name__)
 
 app.secret_key = 'replace-this-with-a-real-secret-key'
 
-# Define lessons (Include all lessons 1 through 6)
+# Define lessons (Only include lessons 1 through 5, removed spine lesson)
 lessons = {
     "1": {
         "title": "Introduction",
@@ -42,22 +42,11 @@ lessons = {
           </ul>
         """,
         "image": "images/shoulders_position_image.jpg"
-    },
-    "6": {
-        "title": "Spine",
-        "content": """
-          <ul class="list-unstyled">
-              <li><strong>Natural Curve:</strong> Maintain the natural curves of your spine. Your lower back should have a slight inward curve, while your upper back has a slight outward curve.</li>
-              <li><strong>Upright Posture:</strong> Sit or stand tall, as if a string were pulling the crown of your head toward the ceiling. This helps lengthen your spine and prevent slouching.</li>
-              <li><strong>Core Engagement:</strong> Gently engage your core muscles to support your spine. This doesn't mean tensing rigidly, but maintaining a natural support for your back.</li>
-          </ul>
-        """,
-        "image": "images/spine_position.jpg"
     }
 }
 
-# Define total steps for progress calculation
-TOTAL_LEARNING_STEPS = 7 # 6 lessons + 1 practice page
+# Define total steps for progress calculation (reduced by 1 since we removed spine)
+TOTAL_LEARNING_STEPS = 6 # 5 lessons + 1 practice page
 
 @app.route('/')
 def homepage():
@@ -94,11 +83,6 @@ def learn(lesson_number):
                            lessons=lessons,
                            progress_percent=progress_percent)
 
-@app.route('/spine')
-def spine():
-    progress_percent = min(round((6 / TOTAL_LEARNING_STEPS) * 100), 100) if session.get('in_learning_flow') else 0
-    return render_template('spine.html', progress_percent=progress_percent)
-
 @app.route('/practice')
 def practice():
     progress_percent = 0 # Default
@@ -109,8 +93,11 @@ def practice():
     
     # Clear any previous practice focus
     session['practice_focus'] = 'all'
+    session['practice_duration_seconds'] = 120  # Set 2-minute practice duration
     
-    return render_template('practice.html', progress_percent=progress_percent)
+    return render_template('practice.html', 
+                           progress_percent=progress_percent, 
+                           practice_duration_seconds=120)
 
 @app.route('/practice/head_neck')
 def practice_head_neck():
@@ -119,10 +106,13 @@ def practice_head_neck():
         progress_percent = min(round((4 / TOTAL_LEARNING_STEPS) * 100), 100)
     
     session['practice_focus'] = 'head_neck'
+    session['practice_duration_seconds'] = 120  # Set 2-minute practice duration
+    
     return render_template('practice_focused.html', 
                            focus="Head & Neck", 
                            title="Head & Neck Practice", 
-                           progress_percent=progress_percent)
+                           progress_percent=progress_percent,
+                           practice_duration_seconds=120)
 
 @app.route('/practice/shoulders')
 def practice_shoulders():
@@ -131,22 +121,13 @@ def practice_shoulders():
         progress_percent = min(round((5 / TOTAL_LEARNING_STEPS) * 100), 100)
     
     session['practice_focus'] = 'shoulders'
+    session['practice_duration_seconds'] = 120  # Set 2-minute practice duration
+    
     return render_template('practice_focused.html', 
                            focus="Shoulders", 
                            title="Shoulders Practice", 
-                           progress_percent=progress_percent)
-
-@app.route('/practice/spine')
-def practice_spine():
-    progress_percent = 0
-    if session.get('in_learning_flow'):
-        progress_percent = min(round((6 / TOTAL_LEARNING_STEPS) * 100), 100)
-    
-    session['practice_focus'] = 'spine'
-    return render_template('practice_focused.html', 
-                           focus="Spine", 
-                           title="Spine Practice", 
-                           progress_percent=progress_percent)
+                           progress_percent=progress_percent,
+                           practice_duration_seconds=120)
 
 @app.route('/save_feedback', methods=['POST'])
 def save_feedback():
@@ -174,14 +155,12 @@ def feedback_summary():
         # For demo purposes, set some sample scores
         session['head_neck_score'] = 75
         session['shoulders_score'] = 60
-        session['spine_score'] = 80
-        session['overall_score'] = 72
-        session['practice_duration'] = '3:45'
+        session['overall_score'] = 68  # Average of head/neck and shoulders only
+        session['practice_duration'] = '2:00'  # Fixed 2-minute duration
         
         # Sample feedback
         session['head_neck_feedback'] = "Your head and neck position is good, but could use some improvement. Try to keep your chin slightly tucked and ears level."
         session['shoulders_feedback'] = "Your shoulders show some tension. Practice relaxing them down and back, keeping them level with each other."
-        session['spine_feedback'] = "Your spine maintains good alignment. Continue sitting tall with good core engagement."
         session['overall_feedback'] = "Your overall posture is good with some areas that could use improvement. With regular practice, you'll develop better postural habits."
     
     return render_template('feedback_summary.html')
@@ -212,18 +191,9 @@ def results():
         session['chest_openness'] = 'Partially Open'
         session['chest_openness_score'] = 65
         
-        # Spine details
-        session['spine_curvature'] = 'Natural'
-        session['spine_curvature_score'] = 85
-        session['lower_back_support'] = 'Moderate Support'
-        session['lower_back_support_score'] = 70
-        session['stability'] = 'Stable'
-        session['stability_score'] = 80
-        
         # Recommendations
         session['head_neck_recommendation'] = 'Practice daily chin tucks to strengthen your neck and improve alignment.'
         session['shoulders_recommendation'] = 'Perform shoulder rolls and gentle stretches throughout the day to release tension.'
-        session['spine_recommendation'] = 'Strengthen your core with regular exercises to improve spine stability.'
         
         # Overall plan
         session['recommendation_1'] = 'Practice 5 minutes of posture awareness at your desk'
@@ -231,17 +201,6 @@ def results():
         session['recommendation_3'] = 'Strengthen your core with 10 minutes of exercises daily'
     
     return render_template('results.html')
-
-# Add a CSS color scheme route for UI customization
-@app.route('/set_theme', methods=['POST'])
-def set_theme():
-    """Set color theme preference"""
-    if request.method == 'POST':
-        theme = request.form.get('theme', 'default')
-        session['color_theme'] = theme
-        return redirect(request.referrer or url_for('homepage'))
-    
-    return redirect(url_for('homepage'))
 
 if __name__ == '__main__':
     app.run(debug=True, host='127.0.0.1', port=5001)

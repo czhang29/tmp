@@ -7,13 +7,15 @@ body {
 }
 
 /* Navbar Styling */
+/* Navbar Styling */
 .navbar {
-    background-color: #586f6b; /* Dark sage green - more professional than darkgrey */
+    background-color: #586f6b; /* Dark sage green */
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .navbar-brand, .navbar-nav .nav-link {
-    color: #fff !important;
+    color: #000 !important; /* Changed from white to black */
+    font-weight: 600; /* Make text slightly bolder for better visibility */
 }
 
 .navbar-brand {
@@ -22,7 +24,7 @@ body {
 }
 
 .navbar-light .navbar-toggler {
-    border-color: rgba(255,255,255,0.5);
+    border-color: rgba(0,0,0,0.5); /* Changed from white to black */
 }
 
 /* General Button Styling */

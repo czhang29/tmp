@@ -4,20 +4,21 @@
 <h2>{{ title|default('Focused Practice') }}</h2>
 
 <!-- Instructions specific to focus area -->
-<p>Use your camera to get real-time feedback specifically on your {{ focus }} posture. This focused practice helps you improve one key area at a time.</p>
+<p>Use your camera to get real-time feedback specifically on your {{ focus }} posture. The practice will run for 2 minutes, after which you'll see your results.</p>
 
 <!-- Hidden element to store focus for JavaScript -->
 <div id="practice-focus" data-focus="{{ session.get('practice_focus', 'all') }}" style="display: none;"></div>
+<div id="practice-duration" data-seconds="{{ practice_duration_seconds|default(120) }}" style="display: none;"></div>
 
-<!-- Countdown Timer -->
+<!-- Countdown Timer for Initial Positioning -->
 <div id="countdown" class="countdown-timer text-center my-3 p-3 bg-light rounded" style="display: none; font-size: 2em; font-weight: bold;">
     Get ready: 5
 </div>
 
-<!-- Practice Duration -->
-<div class="practice-time text-center mb-3">
-    <span>Practice Time: </span>
-    <span id="practice-duration">0:00</span>
+<!-- Practice Timer -->
+<div class="practice-time-container text-center mb-3">
+    <div class="practice-timer-label">Time Remaining:</div>
+    <div id="practice-timer" class="practice-timer">2:00</div>
 </div>
 
 {# --- Main Content Area (Video, Feedback etc.) --- #}
@@ -32,7 +33,7 @@
 {# --- Container for Practice Control Buttons --- #}
 <div class="d-flex justify-content-center gap-3 mt-4">
     <button id="start-button" class="btn btn-primary">Start Practice</button>
-    <button id="end-practice-button" class="btn btn-success" style="display: none;">End & See Results</button>
+    <button id="end-practice-button" class="btn btn-success" style="display: none;">End Early</button>
 </div>
 
 {# --- Container for Bottom Navigation Buttons --- #}
@@ -42,8 +43,6 @@
         <a href="{{ url_for('learn', lesson_number='4') }}" class="btn btn-secondary">&laquo; Back to Head & Neck</a>
     {% elif session.get('practice_focus') == 'shoulders' %}
         <a href="{{ url_for('learn', lesson_number='5') }}" class="btn btn-secondary">&laquo; Back to Shoulders</a>
-    {% elif session.get('practice_focus') == 'spine' %}
-        <a href="{{ url_for('spine') }}" class="btn btn-secondary">&laquo; Back to Spine</a>
     {% else %}
         <a href="{{ url_for('learn', lesson_number='3') }}" class="btn btn-secondary">&laquo; Back to Overview</a>
     {% endif %}

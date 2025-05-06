@@ -3,8 +3,23 @@
 {% block content %}
 <h2>Practice Your Posture</h2>
 
-<!-- Simplified instructions -->
-<p>Use your camera to get real-time feedback on your posture. Click 'Start Practice' when ready.</p>
+<!-- Instructions -->
+<p>Use your camera to get real-time feedback on your posture. The practice will run for 2 minutes, after which you'll see your results.</p>
+
+<!-- Hidden element to store practice info for JavaScript -->
+<div id="practice-focus" data-focus="all" style="display: none;"></div>
+<div id="practice-duration" data-seconds="{{ practice_duration_seconds|default(120) }}" style="display: none;"></div>
+
+<!-- Countdown Timer for Initial Positioning -->
+<div id="countdown" class="countdown-timer text-center my-3 p-3 bg-light rounded" style="display: none; font-size: 2em; font-weight: bold;">
+    Get ready: 5
+</div>
+
+<!-- Practice Timer -->
+<div class="practice-time-container text-center mb-3">
+    <div class="practice-timer-label">Time Remaining:</div>
+    <div id="practice-timer" class="practice-timer">2:00</div>
+</div>
 
 {# --- Main Content Area (Video, Feedback etc.) --- #}
 <div class="practice-main-area">
@@ -16,20 +31,23 @@
 </div>
 
 {# --- Container for Start Practice Button --- #}
-<div class="start-practice-container mt-4"> {# Added margin-top for spacing #}
+<div class="d-flex justify-content-center gap-3 mt-4">
     <button id="start-button" class="btn btn-primary">Start Practice</button>
+    <button id="end-practice-button" class="btn btn-success" style="display: none;">End Early</button>
 </div>
 
 {# --- Container for Bottom Navigation Buttons --- #}
-<div class="bottom-nav-controls mt-5"> {# Added more margin-top for spacing #}
-    {# Previous Button - Links to last lesson #}
-    <a href="{{ url_for('learn', lesson_number='5') }}" class="btn btn-secondary btn-previous">&laquo; Previous</a>
+<div class="bottom-nav-controls mt-5">
+    {# Previous Button - Links to last lesson or homepage #}
+    {% if session.get('in_learning_flow') %}
+        <a href="{{ url_for('learn', lesson_number='5') }}" class="btn btn-secondary">&laquo; Back to Learning</a>
+    {% else %}
+        <a href="{{ url_for('homepage') }}" class="btn btn-secondary">&laquo; Back to Home</a>
+    {% endif %}
 
-    {# Return Home Button - Stays on the right #}
-    <a href="{{ url_for('homepage') }}" class="btn btn-secondary btn-return-home">Return Home &raquo;</a> {# Kept >> arrow #}
+    {# Return Home Button #}
+    <a href="{{ url_for('homepage') }}" class="btn btn-outline-secondary">Return Home</a>
 </div>
-{# --- End of Bottom Button Container --- #}
-
 
 <!-- Load the script last -->
 <script src="{{ url_for('static', filename='scripts.js') }}"></script>
