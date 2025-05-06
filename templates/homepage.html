@@ -1,0 +1,18 @@
+{% extends "layout.html" %}
+
+{% block content %}
+    <script src="{{ url_for('static', filename='scripts.js') }}"></script>
+
+    <div class="container">
+        <!-- Conceptual Group -->
+        <div class="text-center">
+            <h1 id="welcome_div">Welcome to Perfect Posture!</h1>
+            <p id="welcome_message_div" class="lead">
+                Achieve the perfect meditation posture with our real-time feedback system. Let's get started on your journey to better posture!
+            </p>
+            <img src="{{ url_for('static', filename='images/yogaLogo.jpg') }}" alt="Yoga Logo Image" class="img-fluid mb-3">
+        <br>
+        <a class="btn btn-primary btn-lg" href="{{ url_for('learn', lesson_number=1) }}">Start Learning</a>
+    </div>
+{% endblock %}
+

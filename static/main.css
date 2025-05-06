@@ -1,0 +1,274 @@
+/* Global and Body Styles */
+body {
+    font-family: 'Roboto', sans-serif;
+    background-color: #ddd5d0; /* Beige background */
+    color: #333;
+    padding-top: 56px; /* Adjust to match sticky navbar height */
+}
+
+/* Navbar Styling (Add more if needed) */
+.navbar {
+    background-color: darkgrey; /* Consider updating this if needed */
+    /* Ensure navbar height corresponds to body padding-top & sidebar top */
+}
+
+/* General Button Styling */
+button,
+.btn {
+    font-family: 'Roboto', sans-serif;
+}
+
+.btn-lg {
+    padding: 15px 30px;
+    margin-top: 20px;
+}
+
+.btn-primary,
+.btn-secondary,
+.btn-success {
+    background-color: #7f9183; /* Default green */
+    border-color: #7f9183;
+    color: white;
+    font-size: 1.2em;
+    padding: 10px 20px;
+    border-radius: 5px;
+    text-transform: uppercase;
+    transition: background-color 0.3s ease;
+}
+
+/* Specific Success Button Color (for Start Practice) */
+.btn-success {
+    background-color: #2f7d32; /* Darker green for success/final action */
+    border-color: #2f7d32;
+}
+
+
+/* Button Hover Effects */
+.btn-primary:hover,
+.btn-secondary:hover,
+.btn-success:hover {
+    background-color: #586f6b; /* Darker shade for hover */
+    border-color: #586f6b;
+}
+/* Override hover specifically for success if needed */
+.btn-success:hover {
+    background-color: #1d5a20; /* Darker green hover */
+    border-color: #1d5a20;
+}
+
+/* Navbar Practice Link Styling
+.practice-link {
+    color: #6c757d;
+    font-family: inherit;
+    text-decoration: none;
+    padding: 5px 10px;
+    border-radius: 5px;
+}
+
+.practice-link:hover {
+    color: #495057;
+    background-color: #e9ecef;
+    text-decoration: none;
+} */
+
+/* Page Specific Title/Text Styles (Ensure IDs are used uniquely per page) */
+#welcome_div { /* Used on homepage */
+    font-size: 4em;
+    font-weight: bolder;
+    color: black;
+    text-align: center; /* Added for consistency */
+    padding-top: 20px; /* Added spacing */
+}
+
+#welcome_message_div { /* Used on homepage */
+    padding-top: 2%;
+    padding-bottom: 2%;
+    font-size: 2em;
+    color: rgb(79, 79, 79);
+    text-align: center; /* Added for consistency */
+}
+
+#lesson_title { /* Used on learn pages */
+    font-size: 3em; /* Slightly smaller than welcome */
+    font-weight: bolder;
+    color: black;
+    margin-bottom: 20px; /* Added spacing */
+}
+
+#lesson_text { /* Used on learn pages */
+    padding-top: 1%;
+    padding-bottom: 2%;
+    font-size: 1.5em; /* Adjusted size */
+    line-height: 1.6; /* Improve readability */
+}
+
+/* Lesson Image Styling */
+.lesson-image {
+    width: 100%;
+    max-width: 500px;
+    height: 400px; /* Consistent height */
+    object-fit: cover;
+    display: block;
+    margin: 20px auto; /* Center with vertical margin */
+    border-radius: 8px; /* Optional: rounded corners */
+}
+
+/* ---- Body-map layout (Lesson 3) ---- */
+.body-map {
+    position: relative;
+    max-width: 650px;
+    margin: 20px auto; /* Center with vertical margin */
+}
+
+.body-map img {
+    width: 100%;
+    height: auto;
+    display: block; /* Remove potential extra space below image */
+}
+
+.body-btn {
+    position: absolute;
+    width: 36px;
+    height: 36px;
+    border: 4px solid #2f7d32; /* Green ring */
+    border-radius: 50%;
+    background: white;
+    box-shadow: 0 0 8px rgba(0, 0, 0, .2);
+    transition: background .2s;
+    transform: translate(-50%, -50%); /* Center precisely on position */
+}
+
+.body-btn:hover {
+    background: #2f7d32; /* Fill green on hover */
+    cursor: pointer;
+}
+
+.body-label {
+    position: absolute;
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: #000;
+    transform: translateY(-50%); /* Vertical centering relative to top */
+    background: #fff;
+    padding: 2px 6px;
+    border-radius: 12px;
+    line-height: 1.2;
+    white-space: nowrap;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1); /* Optional subtle shadow */
+}
+
+/* --- Precise positions for Body Map elements (adjust if needed) --- */
+.btn-head { top: 17%; left: 49%; }
+.lbl-head { top: 17%; left: 62%; }
+.btn-shoulders { top: 32%; left: 65%; }
+.lbl-shoulders { top: 32%; left: 74%; }
+/* Removed .btn-spine, .lbl-spine, .btn-lungs, .lbl-lungs, .btn-legs, .lbl-legs */
+
+/* --- Practice Page Video/Canvas Styling --- */
+#video-container {
+    position: relative; /* Context for canvas overlay */
+    /* width: 640px; */ /* Or use max-width */
+    /* height: 480px; */
+    max-width: 100%; /* Responsive width */
+    margin: 20px auto; /* Center container */
+    border: 1px solid #ccc; /* Optional border */
+    line-height: 0; /* Prevent extra space below video/canvas */
+}
+
+#video {
+    display: block;
+    width: 100%; /* Fill container */
+    height: auto; /* Maintain aspect ratio */
+}
+
+#overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%; /* Match video */
+    height: 100%; /* Match video */
+}
+
+/* Practice Page Feedback Text */
+#feedback {
+    margin-top: 15px;
+    font-size: 1.2em;
+    color: #333;
+    text-align: center; /* Center feedback text */
+    min-height: 1.5em; /* Prevent layout shift */
+}
+
+/* --- Layout for Sidebar and Content --- */
+.page-container {
+    display: flex;
+    min-height: calc(100vh - 56px); /* Adjust 56px based on actual navbar height */
+}
+
+.progress-sidebar {
+    width: 100px; /* Sidebar width */
+    flex-shrink: 0; /* Prevent sidebar from shrinking */
+    padding: 20px 10px;
+    background-color: #f8f9fa; /* Light background */
+    border-right: 1px solid #dee2e6;
+    text-align: center;
+    position: sticky;
+    top: 56px; /* Must match body padding-top */
+    height: calc(100vh - 56px); /* Full height minus navbar */
+    overflow-y: auto; /* Allow scroll if sidebar content is tall */
+}
+
+.main-content {
+    flex-grow: 1; /* Takes remaining space */
+    padding: 20px; /* Padding around main content */
+    background-color: #ddd5d0; /* Match body background */
+}
+
+/* --- Vertical Progress Bar Styling --- */
+.progress.progress-vertical {
+    width: 25px; /* Width of the track */
+    min-height: 200px;
+    height: 60%; /* Adjust as desired */
+    margin: 10px auto; /* Center */
+    display: flex;
+    align-items: flex-end; /* Bar grows from bottom */
+    background-color: #e9ecef; /* Track color */
+    border-radius: 0.375rem;
+    overflow: hidden;
+}
+
+.progress.progress-vertical .progress-bar {
+    width: 100%; /* Fill track width */
+    height: 0; /* Initial height, overridden by inline style */
+    background-color: #2f7d32; /* Progress bar fill color (green) */
+    transition: height 0.6s ease;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    font-size: 0.75em;
+    font-weight: bold;
+}
+
+.progress-text {
+    font-size: 0.9em;
+    font-weight: bold;
+    color: #333;
+    margin-top: 8px; /* Space below the bar */
+}
+
+.start-practice-container {
+    text-align: center; /* Center the inline-block button */
+    padding: 15px 0;   /* Add some vertical spacing */
+    /* margin-top: 20px; /* Space above this button - already added via class */
+}
+
+/* Container for the bottom Previous/Return Home buttons */
+.bottom-nav-controls {
+    display: flex;              /* Enable Flexbox */
+    justify-content: space-between; /* Push items to opposite ends */
+    align-items: center;        /* Vertically align buttons */
+    padding: 20px 0;            /* Vertical padding */
+    margin-top: 40px;           /* More space above the bottom row - already added via class */
+    border-top: 1px solid #dee2e6; /* Optional separator line */
+    width: 100%;                /* Ensure it spans the width */
+}

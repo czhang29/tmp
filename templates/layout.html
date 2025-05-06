@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Perfect Posture Practice</title>
+    {# Link Bootstrap CSS #}
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    {# Link your custom CSS file #}
+    <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
+    {# TensorFlow.js and Pose Detection scripts #}
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/pose-detection"></script>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light sticky-top">
+      <div class="container-fluid">
+        {# Navbar Brand still links home #}
+        <a class="navbar-brand" href="{{ url_for('homepage') }}">Posture Perfect</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav">
+            {# REMOVED Home Link #}
+            {# <li class="nav-item">
+              <a class="nav-link active" aria-current="page" href="{{ url_for('homepage') }}">Home</a>
+            </li> #}
+
+            {# KEEP Start Learning Link #}
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('learn', lesson_number='1') }}">Start Learning</a>
+            </li>
+
+             {# REMOVED Browse Lessons Link #}
+            {# <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('learn', lesson_number='1') }}">Browse Lessons</a>
+            </li> #}
+
+            {# KEEP Assess Yourself Link - Use ONLY nav-link class for alignment #}
+            <li class="nav-item">
+              {# FIX: Removed 'practice-link' class #}
+              <a class="nav-link" href="{{ url_for('practice') }}">Assess Yourself</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    {# --- Container for Sidebar and Main Content --- #}
+    <div class="page-container d-flex">
+
+        {# --- Vertical Progress Bar Sidebar --- #}
+        {% if progress_percent is defined and progress_percent > 0 %}
+        <div class="progress-sidebar">
+            <h6>Progress</h6>
+            <div class="progress progress-vertical">
+                <div class="progress-bar" role="progressbar" style="height: {{ progress_percent }}%;" aria-valuenow="{{ progress_percent }}" aria-valuemin="0" aria-valuemax="100">
+                </div>
+            </div>
+             <div class="progress-text mt-2">{{ progress_percent }}%</div>
+        </div>
+        {% endif %}
+
+        {# --- Main Content Area --- #}
+        <div class="main-content flex-grow-1">
+            {% block content %}
+            {# Page specific content goes here #}
+            {% endblock %}
+        </div>
+
+    </div> {# End Page Container #}
+
+    {# Link Bootstrap JS Bundle #}
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,58 @@
+{# In learn.html #}
+
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    {# Use lesson.get('title') for safer dictionary access #}
+    <h2 id="lesson_title">{{ lesson.get('title', 'Lesson ' ~ lesson_number) }}</h2>
+
+    {# --- Content Section --- #}
+    {% if lesson_number == '3' %}
+        <!-- Special layout for Body Position Overview (Lesson 3) -->
+        <p id="lesson_text">{{ lesson.get('content', '') | safe }}</p>
+        <div class="body-map">
+            <img src="{{ url_for('static', filename='images/body_map.png') }}" alt="Body Position Map">
+            <!-- Interactive Dots/Links -->
+            <a href="{{ url_for('learn', lesson_number='4') }}" class="body-btn btn-head" style="top: 17%; left: 49%;"></a>
+            <div class="body-label lbl-head" style="top: 17%; left: 62%;">Head & Neck</div>
+            <a href="{{ url_for('learn', lesson_number='5') }}" class="body-btn btn-shoulders" style="top: 32%; left: 65%;"></a>
+            <div class="body-label lbl-shoulders" style="top: 32%; left: 74%;">Shoulders & Arms</div>
+        </div>
+
+    {% else %}
+        <!-- Default layout for other lessons (1, 2, 4, 5) -->
+        {# Check if 'image' key exists in the lesson dictionary and has a value #}
+        {% if 'image' in lesson and lesson.image %}
+            {# FIX: Use url_for() to generate the image source #}
+            <img src="{{ url_for('static', filename=lesson.image) }}" alt="{{ lesson.get('title', '') }}" class="lesson-image img-fluid my-3">
+        {% endif %}
+        {# Use lesson.get('content') for safer dictionary access #}
+        <p id="lesson_text">{{ lesson.get('content', '') | safe }}</p>
+    {% endif %}
+
+    {# --- Navigation Button Section (remains the same) --- #}
+    <div class="d-flex justify-content-between mt-4 pt-3 border-top">
+        {# Previous Button #}
+        {% if lesson_number|int > 1 %}
+            {% set prev_lesson_number = lesson_number|int - 1 %}
+            <a href="{{ url_for('learn', lesson_number=prev_lesson_number) }}" class="btn btn-secondary">&laquo; Previous</a>
+        {% else %}
+            <span></span>
+        {% endif %}
+        {# Next Button #}
+        {% if lesson_number == '1' %}
+            <a href="{{ url_for('learn', lesson_number='2') }}" class="btn btn-primary">Next: Benefits & Disadvantages &raquo;</a>
+        {% elif lesson_number == '2' %}
+            <a href="{{ url_for('learn', lesson_number='3') }}" class="btn btn-primary">Next: Body Position Overview &raquo;</a>
+        {% elif lesson_number == '3' %}
+            <a href="{{ url_for('learn', lesson_number='4') }}" class="btn btn-primary">Next: Head & Neck &raquo;</a>
+        {% elif lesson_number == '4' %}
+            <a href="{{ url_for('learn', lesson_number='5') }}" class="btn btn-primary">Next: Shoulders & Arms &raquo;</a>
+        {% elif lesson_number == '5' %}
+            <a href="{{ url_for('practice') }}" class="btn btn-success">Start Practice &raquo;</a>
+        {% endif %}
+    </div> {# End of Navigation Button Section #}
+
+</div> {# End of Container #}
+{% endblock %}
