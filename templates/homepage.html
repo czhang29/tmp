@@ -10,7 +10,9 @@
             <p id="welcome_message_div" class="lead">
                 Achieve the perfect meditation posture with our real-time feedback system. Let's get started on your journey to better posture!
             </p>
-            <img src="{{ url_for('static', filename='images/yogaLogo.jpg') }}" alt="Yoga Logo Image" class="img-fluid mb-3">
+            <!-- Smaller image with max-height and width constraints -->
+            <img src="{{ url_for('static', filename='images/yogaLogo.jpg') }}" alt="Yoga Logo Image" 
+                 class="img-fluid mb-3" style="max-height: 200px; max-width: 250px;">
         <br>
         <div class="d-flex justify-content-center gap-4">
             <a class="btn btn-primary btn-lg" href="{{ url_for('learn', lesson_number=1) }}">Learn All</a>
@@ -18,8 +20,8 @@
         </div>
         
         <!-- Quick Access Buttons for Focused Practice -->
-        <div class="focused-practice-links mt-5">
-            <h3 class="mb-4">Practice Specific Areas</h3>
+        <div class="focused-practice-links mt-4">
+            <h3 class="mb-3">Practice Specific Areas</h3>
             <div class="row justify-content-center">
                 <div class="col-md-4 mb-3">
                     <div class="card h-100">

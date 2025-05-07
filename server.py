@@ -152,15 +152,28 @@ def feedback_summary():
     """Show practice feedback summary"""
     # Default values if session doesn't have data
     if 'head_neck_score' not in session:
-        # For demo purposes, set some sample scores
-        session['head_neck_score'] = 75
-        session['shoulders_score'] = 60
-        session['overall_score'] = 68  # Average of head/neck and shoulders only
-        session['practice_duration'] = '2:00'  # Fixed 2-minute duration
+        # Get practice focus (default to 'all' if not set)
+        focus = session.get('practice_focus', 'all')
         
-        # Sample feedback
-        session['head_neck_feedback'] = "Your head and neck position is good, but could use some improvement. Try to keep your chin slightly tucked and ears level."
-        session['shoulders_feedback'] = "Your shoulders show some tension. Practice relaxing them down and back, keeping them level with each other."
+        # Set default scores based on focus
+        if focus == 'head_neck':
+            session['head_neck_score'] = 75
+            session['overall_score'] = 75
+            session['head_neck_feedback'] = "Your head and neck position is good, but could use some improvement. Try to keep your chin slightly tucked and ears level."
+        elif focus == 'shoulders':
+            session['shoulders_score'] = 60
+            session['overall_score'] = 60
+            session['shoulders_feedback'] = "Your shoulders show some tension. Practice relaxing them down and back, keeping them level with each other."
+        else:
+            # Full practice
+            session['head_neck_score'] = 75
+            session['shoulders_score'] = 60
+            session['overall_score'] = 68  # Average of head/neck and shoulders
+            session['head_neck_feedback'] = "Your head and neck position is good, but could use some improvement. Try to keep your chin slightly tucked and ears level."
+            session['shoulders_feedback'] = "Your shoulders show some tension. Practice relaxing them down and back, keeping them level with each other."
+        
+        # Practice duration is standard 2 minutes
+        session['practice_duration'] = '2:00'
         session['overall_feedback'] = "Your overall posture is good with some areas that could use improvement. With regular practice, you'll develop better postural habits."
     
     return render_template('feedback_summary.html')
@@ -173,32 +186,38 @@ def results():
         # If no scores are set, redirect to summary to initialize defaults
         return redirect(url_for('feedback_summary'))
     
+    # Get practice focus
+    focus = session.get('practice_focus', 'all')
+    
     # For demo, add more detailed metrics if not present
     if 'head_alignment' not in session:
-        # Head & Neck details
-        session['head_alignment'] = 'Good'
-        session['head_alignment_score'] = 70
-        session['neck_tension'] = 'Slightly Tense'
-        session['neck_tension_score'] = 65
-        session['gaze_direction'] = 'Level'
-        session['gaze_direction_score'] = 80
+        # Set default metrics based on focus
+        if focus == 'head_neck' or focus == 'all':
+            # Head & Neck details
+            session['head_alignment'] = 'Good'
+            session['head_alignment_score'] = 70
+            session['neck_tension'] = 'Slightly Tense'
+            session['neck_tension_score'] = 65
+            session['gaze_direction'] = 'Level'
+            session['gaze_direction_score'] = 80
+            session['head_neck_recommendation'] = 'Practice daily chin tucks to strengthen your neck and improve alignment.'
         
-        # Shoulders details
-        session['shoulder_level'] = 'Slightly Uneven'
-        session['shoulder_level_score'] = 60
-        session['shoulder_tension'] = 'Tense'
-        session['shoulder_tension_score'] = 50
-        session['chest_openness'] = 'Partially Open'
-        session['chest_openness_score'] = 65
+        if focus == 'shoulders' or focus == 'all':
+            # Shoulders details
+            session['shoulder_level'] = 'Slightly Uneven'
+            session['shoulder_level_score'] = 60
+            session['shoulder_tension'] = 'Tense'
+            session['shoulder_tension_score'] = 50
+            session['chest_openness'] = 'Partially Open'
+            session['chest_openness_score'] = 65
+            session['shoulders_recommendation'] = 'Perform shoulder rolls and gentle stretches throughout the day to release tension.'
         
-        # Recommendations
-        session['head_neck_recommendation'] = 'Practice daily chin tucks to strengthen your neck and improve alignment.'
-        session['shoulders_recommendation'] = 'Perform shoulder rolls and gentle stretches throughout the day to release tension.'
-        
-        # Overall plan
+        # Overall plan recommendations
         session['recommendation_1'] = 'Practice 5 minutes of posture awareness at your desk'
         session['recommendation_2'] = 'Do 2-3 gentle neck stretches every hour'
         session['recommendation_3'] = 'Strengthen your core with 10 minutes of exercises daily'
+        session['overall_recommendation'] = 'Based on your assessment, we recommend the following daily practice:'
+        session['recommendation_footer'] = 'Implement these practices consistently for 2 weeks, then return for another assessment to track your progress.'
     
     return render_template('results.html')
 

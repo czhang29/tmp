@@ -7,8 +7,9 @@
     <div class="feedback-summary-container">
         <!-- Summary Cards -->
         <div class="row mb-4">
+            {% if session.get('practice_focus') == 'all' or session.get('practice_focus') == 'head_neck' %}
             <!-- Head & Neck Summary Card -->
-            <div class="col-md-4 mb-3">
+            <div class="col-md-{% if session.get('practice_focus') != 'all' %}12{% else %}6{% endif %} mb-3">
                 <div class="card h-100">
                     <div class="card-header bg-primary text-white">
                         <h5 class="card-title mb-0">Head & Neck</h5>
@@ -28,9 +29,11 @@
                     </div>
                 </div>
             </div>
+            {% endif %}
             
+            {% if session.get('practice_focus') == 'all' or session.get('practice_focus') == 'shoulders' %}
             <!-- Shoulders Summary Card -->
-            <div class="col-md-4 mb-3">
+            <div class="col-md-{% if session.get('practice_focus') != 'all' %}12{% else %}6{% endif %} mb-3">
                 <div class="card h-100">
                     <div class="card-header bg-primary text-white">
                         <h5 class="card-title mb-0">Shoulders</h5>
@@ -50,31 +53,11 @@
                     </div>
                 </div>
             </div>
-            
-            <!-- Spine Summary Card -->
-            <div class="col-md-4 mb-3">
-                <div class="card h-100">
-                    <div class="card-header bg-primary text-white">
-                        <h5 class="card-title mb-0">Spine</h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="feedback-score mb-3 text-center">
-                            <div class="score-circle {% if session.get('spine_score', 0) >= 80 %}score-excellent{% elif session.get('spine_score', 0) >= 60 %}score-good{% else %}score-needs-work{% endif %}">
-                                {{ session.get('spine_score', 0) }}%
-                            </div>
-                        </div>
-                        <p class="card-text">{{ session.get('spine_feedback', 'No feedback recorded for spine alignment.') }}</p>
-                        <ul class="feedback-tips">
-                            <li>Maintain natural curves of your spine</li>
-                            <li>Sit tall through the crown of your head</li>
-                            <li>Avoid slouching or over-arching</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
+            {% endif %}
         </div>
         
-        <!-- Overall Summary -->
+        <!-- Overall Summary - Only show if doing full practice -->
+        {% if session.get('practice_focus') == 'all' %}
         <div class="overall-summary mb-4 p-4 border rounded bg-light">
             <h3>Overall Assessment</h3>
             <div class="row align-items-center">
@@ -91,6 +74,7 @@
                 </div>
             </div>
         </div>
+        {% endif %}
         
         <!-- Practice Duration -->
         <div class="practice-duration mb-4">
