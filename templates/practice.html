@@ -4,10 +4,16 @@
 <h2>Practice Your Posture</h2>
 
 <!-- Instructions -->
-<p>Use your camera to get real-time feedback on your posture. The practice will run for 2 minutes, after which you'll see your results.</p>
+<p>Use your camera to get real-time feedback on your posture. 
+{% if practice_duration_seconds == 0 %}
+You can practice for as long as you want. End the session when you're done.
+{% else %}
+The practice will run for {{ practice_duration_seconds|int // 60 }} minutes, after which you'll see your results.
+{% endif %}
+</p>
 
 <!-- Hidden element to store practice info for JavaScript -->
-<div id="practice-focus" data-focus="all" style="display: none;"></div>
+<div id="practice-focus" data-focus="{{ session.get('practice_focus', 'all') }}" style="display: none;"></div>
 <div id="practice-duration" data-seconds="{{ practice_duration_seconds|default(120) }}" style="display: none;"></div>
 
 <!-- Countdown Timer for Initial Positioning -->
@@ -18,7 +24,13 @@
 <!-- Practice Timer -->
 <div class="practice-time-container text-center mb-3">
     <div class="practice-timer-label">Time Remaining:</div>
-    <div id="practice-timer" class="practice-timer">2:00</div>
+    <div id="practice-timer" class="practice-timer">
+        {% if practice_duration_seconds == 0 %}
+        No time limit
+        {% else %}
+        {{ practice_duration_seconds|int // 60 }}:{% if practice_duration_seconds % 60 < 10 %}0{% endif %}{{ practice_duration_seconds % 60 }}
+        {% endif %}
+    </div>
 </div>
 
 {# --- Main Content Area (Video, Feedback etc.) --- #}
@@ -33,7 +45,12 @@
 {# --- Container for Start Practice Button --- #}
 <div class="d-flex justify-content-center gap-3 mt-4">
     <button id="start-button" class="btn btn-primary">Start Practice</button>
-    <button id="end-practice-button" class="btn btn-success" style="display: none;">End Early</button>
+    <button id="end-practice-button" class="btn btn-success" style="display: none;">End Session</button>
+</div>
+
+{# --- Audio Toggle --- #}
+<div id="audio-toggle" class="audio-status">
+    <i class="fas fa-volume-up"></i>
 </div>
 
 {# --- Container for Bottom Navigation Buttons --- #}
@@ -46,8 +63,11 @@
     {% endif %}
 
     {# Return Home Button #}
-    <a href="{{ url_for('homepage') }}" class="btn btn-outline-secondary">Return Home</a>
+    <a href="{{ url_for('homepage') }}" class="btn btn-primary">Return Home</a>
 </div>
+
+<!-- Import Font Awesome for audio icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 
 <!-- Load the script last -->
 <script src="{{ url_for('static', filename='scripts.js') }}"></script>

@@ -85,19 +85,8 @@ def learn(lesson_number):
 
 @app.route('/practice')
 def practice():
-    progress_percent = 0 # Default
-
-    # Show 100% progress ONLY if user was in the learning flow
-    if session.get('in_learning_flow'):
-        progress_percent = 100
-    
-    # Clear any previous practice focus
-    session['practice_focus'] = 'all'
-    session['practice_duration_seconds'] = 120  # Set 2-minute practice duration
-    
-    return render_template('practice.html', 
-                           progress_percent=progress_percent, 
-                           practice_duration_seconds=120)
+    # Redirect to timer selection page instead of going directly to practice
+    return redirect(url_for('timer_selection', practice_focus='all'))
 
 @app.route('/practice/head_neck')
 def practice_head_neck():
@@ -106,13 +95,9 @@ def practice_head_neck():
         progress_percent = min(round((4 / TOTAL_LEARNING_STEPS) * 100), 100)
     
     session['practice_focus'] = 'head_neck'
-    session['practice_duration_seconds'] = 120  # Set 2-minute practice duration
     
-    return render_template('practice_focused.html', 
-                           focus="Head & Neck", 
-                           title="Head & Neck Practice", 
-                           progress_percent=progress_percent,
-                           practice_duration_seconds=120)
+    # Redirect to timer selection page
+    return redirect(url_for('timer_selection', practice_focus='head_neck'))
 
 @app.route('/practice/shoulders')
 def practice_shoulders():
@@ -121,13 +106,99 @@ def practice_shoulders():
         progress_percent = min(round((5 / TOTAL_LEARNING_STEPS) * 100), 100)
     
     session['practice_focus'] = 'shoulders'
-    session['practice_duration_seconds'] = 120  # Set 2-minute practice duration
+    
+    # Redirect to timer selection page
+    return redirect(url_for('timer_selection', practice_focus='shoulders'))
+
+@app.route('/timer_selection')
+def timer_selection():
+    """Show timer selection page"""
+    practice_focus = request.args.get('practice_focus', 'all')
+    session['practice_focus'] = practice_focus
+    
+    progress_percent = 0
+    if session.get('in_learning_flow'):
+        if practice_focus == 'head_neck':
+            progress_percent = min(round((4 / TOTAL_LEARNING_STEPS) * 100), 100)
+        elif practice_focus == 'shoulders':
+            progress_percent = min(round((5 / TOTAL_LEARNING_STEPS) * 100), 100)
+        else:
+            progress_percent = 100
+    
+    return render_template('timer_selection.html', progress_percent=progress_percent)
+
+@app.route('/start_countdown', methods=['POST'])
+def start_countdown():
+    """Process timer selection and show countdown page"""
+    if request.method == 'POST':
+        # Get practice duration from form
+        practice_duration_seconds = request.form.get('practice_duration_seconds', '120')
+        practice_focus = request.form.get('practice_focus', 'all')
+        
+        # Store in session
+        session['practice_duration_seconds'] = int(practice_duration_seconds)
+        session['practice_focus'] = practice_focus
+        
+        # Determine redirect URL based on practice focus
+        if practice_focus == 'head_neck':
+            redirect_url = url_for('practice_head_neck_session')
+        elif practice_focus == 'shoulders':
+            redirect_url = url_for('practice_shoulders_session')
+        else:
+            redirect_url = url_for('practice_session')
+        
+        return render_template('countdown.html', redirect_url=redirect_url)
+    
+    # If not POST, redirect to selection page
+    return redirect(url_for('timer_selection'))
+
+@app.route('/practice_session')
+def practice_session():
+    """Show the actual practice page after countdown"""
+    progress_percent = 0
+    
+    # Show 100% progress ONLY if user was in the learning flow
+    if session.get('in_learning_flow'):
+        progress_percent = 100
+    
+    # Get practice duration from session
+    practice_duration_seconds = session.get('practice_duration_seconds', 120)
+    
+    return render_template('practice.html', 
+                           progress_percent=progress_percent, 
+                           practice_duration_seconds=practice_duration_seconds)
+
+@app.route('/practice_head_neck_session')
+def practice_head_neck_session():
+    """Show focused practice page for head & neck after countdown"""
+    progress_percent = 0
+    if session.get('in_learning_flow'):
+        progress_percent = min(round((4 / TOTAL_LEARNING_STEPS) * 100), 100)
+    
+    # Get practice duration from session
+    practice_duration_seconds = session.get('practice_duration_seconds', 120)
+    
+    return render_template('practice_focused.html', 
+                           focus="Head & Neck", 
+                           title="Head & Neck Practice", 
+                           progress_percent=progress_percent,
+                           practice_duration_seconds=practice_duration_seconds)
+
+@app.route('/practice_shoulders_session')
+def practice_shoulders_session():
+    """Show focused practice page for shoulders after countdown"""
+    progress_percent = 0
+    if session.get('in_learning_flow'):
+        progress_percent = min(round((5 / TOTAL_LEARNING_STEPS) * 100), 100)
+    
+    # Get practice duration from session
+    practice_duration_seconds = session.get('practice_duration_seconds', 120)
     
     return render_template('practice_focused.html', 
                            focus="Shoulders", 
                            title="Shoulders Practice", 
                            progress_percent=progress_percent,
-                           practice_duration_seconds=120)
+                           practice_duration_seconds=practice_duration_seconds)
 
 @app.route('/save_feedback', methods=['POST'])
 def save_feedback():
@@ -172,8 +243,12 @@ def feedback_summary():
             session['head_neck_feedback'] = "Your head and neck position is good, but could use some improvement. Try to keep your chin slightly tucked and ears level."
             session['shoulders_feedback'] = "Your shoulders show some tension. Practice relaxing them down and back, keeping them level with each other."
         
-        # Practice duration is standard 2 minutes
-        session['practice_duration'] = '2:00'
+        # Get practice duration from session (default to 2 minutes)
+        practice_duration_seconds = session.get('practice_duration_seconds', 120)
+        minutes = practice_duration_seconds // 60
+        seconds = practice_duration_seconds % 60
+        session['practice_duration'] = f"{minutes}:{seconds:02d}"
+        
         session['overall_feedback'] = "Your overall posture is good with some areas that could use improvement. With regular practice, you'll develop better postural habits."
     
     return render_template('feedback_summary.html')

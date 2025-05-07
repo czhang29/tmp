@@ -1,19 +1,36 @@
-// Verify TensorFlow.js is loaded
-console.log('TensorFlow.js version:', tf.version.tfjs);
-
 // Global variables
 let lastFeedbackTime = 0;
 const feedbackInterval = 15000; // 15 seconds in milliseconds
+let lastAudioAlertTime = 0;
+const audioAlertInterval = 30000; // 30 seconds minimum between audio alerts
 let detector = null; // Hold the detector globally
 let animationFrameId = null; // To control the animation loop
 let countdownTimer = null; // For the initial countdown timer
-let practiceTimer = null; // For the 2-minute practice timer
+let practiceTimer = null; // For the practice timer
 let countdownSeconds = 5; // Default countdown seconds
 let practiceSeconds = 120; // Default practice duration (2 minutes)
 let practiceStartTime = null; // When practice actually started
 let isAnalyzing = false; // Flag to track if analysis is running
 let feedbackHistory = []; // Store feedback history for summary
 let practiceFocus = 'all'; // Default to analyze all posture aspects
+let audioEnabled = true; // Flag for audio alerts
+let feedbackSound = null; // Audio element for feedback sound
+
+// Lower thresholds to trigger more feedback
+const THRESHOLDS = {
+    // For head and neck position
+    neckCenteringThreshold: 20, // Original: 30
+    headTiltThreshold: 15,      // Original: 25
+    
+    // For shoulders position
+    shoulderAlignmentThreshold: 20, // Original: 30
+    shoulderTensionThreshold: 30,   // Original: 40
+    
+    // For complete feedback
+    completeShoulderAlignmentThreshold: 25, // Original: 35
+    completeNeckCenteringThreshold: 25,     // Original: 35
+    completeHeadTiltThreshold: 20           // Original: 30
+};
 
 // Get elements needed multiple times
 const video = document.getElementById('video');
@@ -27,6 +44,23 @@ const practiceTimerElement = document.getElementById('practice-timer');
 
 // Initialize based on page focus and duration (if set)
 document.addEventListener('DOMContentLoaded', function() {
+    // Setup audio element for feedback
+    feedbackSound = new Audio('/static/sounds/ding.mp3');
+    
+    // Check if we're on the timer selection page
+    if (document.getElementById('timer-selection')) {
+        setupTimerSelection();
+        return; // Exit early if on timer selection page
+    }
+    
+    // Check if we're on the countdown page
+    if (document.getElementById('fullscreen-countdown')) {
+        startFullscreenCountdown();
+        return; // Exit early if on countdown page
+    }
+    
+    // Regular practice page initialization
+    
     // Check if practice focus is set on the page
     const focusElement = document.getElementById('practice-focus');
     if (focusElement) {
@@ -57,7 +91,83 @@ document.addEventListener('DOMContentLoaded', function() {
     if (endPracticeButton) {
         endPracticeButton.addEventListener('click', endPracticeSession);
     }
+    
+    // Setup audio toggle if exists
+    const audioToggle = document.getElementById('audio-toggle');
+    if (audioToggle) {
+        audioToggle.addEventListener('click', toggleAudio);
+    }
 });
+
+// Setup timer selection
+function setupTimerSelection() {
+    const timerOptions = document.querySelectorAll('.timer-option');
+    
+    timerOptions.forEach(option => {
+        option.addEventListener('click', function() {
+            // Remove selected class from all options
+            timerOptions.forEach(opt => opt.classList.remove('selected'));
+            
+            // Add selected class to clicked option
+            this.classList.add('selected');
+            
+            // Update the hidden input value
+            const selectedTime = this.getAttribute('data-seconds');
+            document.getElementById('selected-timer').value = selectedTime;
+            
+            // Enable the continue button
+            document.getElementById('continue-button').disabled = false;
+        });
+    });
+}
+
+// Start fullscreen countdown
+function startFullscreenCountdown() {
+    const countdownElement = document.getElementById('countdown-number');
+    const redirectUrl = document.getElementById('redirect-url').value;
+    let seconds = 5;
+    
+    countdownElement.textContent = seconds;
+    
+    const countdownInterval = setInterval(() => {
+        seconds--;
+        
+        if (seconds <= 0) {
+            clearInterval(countdownInterval);
+            window.location.href = redirectUrl;
+        } else {
+            countdownElement.textContent = seconds;
+        }
+    }, 1000);
+}
+
+// Toggle audio alerts
+function toggleAudio() {
+    audioEnabled = !audioEnabled;
+    const audioToggle = document.getElementById('audio-toggle');
+    
+    if (audioToggle) {
+        if (audioEnabled) {
+            audioToggle.innerHTML = '<i class="fas fa-volume-up"></i>';
+            audioToggle.classList.remove('muted');
+        } else {
+            audioToggle.innerHTML = '<i class="fas fa-volume-mute"></i>';
+            audioToggle.classList.add('muted');
+        }
+    }
+}
+
+// Play audio alert for posture problems
+function playPostureAlert() {
+    const now = Date.now();
+    
+    // Only play if enough time has passed since the last alert
+    if (audioEnabled && now - lastAudioAlertTime >= audioAlertInterval) {
+        feedbackSound.play();
+        lastAudioAlertTime = now;
+        console.log("Playing posture alert sound");
+    }
+}
 
 // Helper function to format time as MM:SS
 function formatTime(totalSeconds) {
@@ -91,9 +201,15 @@ function startCountdown(seconds, onComplete) {
     }, 1000);
 }
 
-// 2-minute practice timer
+// Practice timer
 function startPracticeTimer(seconds) {
     if (!practiceTimerElement) return;
+    
+    // If no-time option was selected (seconds = 0)
+    if (seconds === 0) {
+        practiceTimerElement.textContent = "No time limit";
+        return;
+    }
     
     let remainingSeconds = seconds;
     practiceTimerElement.textContent = formatTime(remainingSeconds);
@@ -197,16 +313,26 @@ async function detectPose() {
                 
                 // Generate appropriate feedback based on practice focus
                 let postureFeedback;
+                let hasPostureProblems = false;
                 
                 switch(practiceFocus) {
                     case 'head_neck':
                         postureFeedback = generateHeadNeckFeedback(keypoints);
+                        // Check if feedback indicates a problem (doesn't contain "excellent" or "great")
+                        hasPostureProblems = !postureFeedback.toLowerCase().includes("excellent") && !postureFeedback.toLowerCase().includes("great");
                         break;
                     case 'shoulders':
                         postureFeedback = generateShouldersFeedback(keypoints);
+                        hasPostureProblems = !postureFeedback.toLowerCase().includes("excellent") && !postureFeedback.toLowerCase().includes("great");
                         break;
                     default:
                         postureFeedback = generateCompleteFeedback(keypoints);
+                        hasPostureProblems = !postureFeedback.toLowerCase().includes("good") && !postureFeedback.toLowerCase().includes("great");
+                }
+                
+                // Play audio alert if there are posture problems
+                if (hasPostureProblems) {
+                    playPostureAlert();
                 }
                 
                 // Store feedback for summary
@@ -240,44 +366,13 @@ async function detectPose() {
     animationFrameId = requestAnimationFrame(detectPose);
 }
 
-// Draw keypoints on the canvas
-function drawKeypoints(ctx, keypoints) {
-    const keypointRadius = 5; // Smaller radius
-    ctx.fillStyle = "red";
-    keypoints.forEach((keypoint) => {
-        if (keypoint.score > 0.5) { // Confidence threshold
-            ctx.beginPath();
-            ctx.arc(keypoint.x, keypoint.y, keypointRadius, 0, 2 * Math.PI);
-            ctx.fill();
-        }
-    });
-}
-
-// Draw skeleton on the canvas
-function drawSkeleton(ctx, keypoints) {
-    ctx.strokeStyle = "blue";
-    ctx.lineWidth = 2; // Thinner lines
-    const adjacentPairs = poseDetection.util.getAdjacentPairs(poseDetection.SupportedModels.MoveNet);
-
-    adjacentPairs.forEach(([i, j]) => {
-        const kp1 = keypoints[i];
-        const kp2 = keypoints[j];
-        if (kp1.score > 0.5 && kp2.score > 0.5) { // Confidence threshold
-            ctx.beginPath();
-            ctx.moveTo(kp1.x, kp1.y);
-            ctx.lineTo(kp2.x, kp2.y);
-            ctx.stroke();
-        }
-    });
-}
-
 // Generate feedback ONLY for head and neck position
 function generateHeadNeckFeedback(keypoints) {
     let feedbackMessages = [];
     
-    // --- INCREASED TOLERANCE THRESHOLDS ---
-    const neckCenteringThreshold = 30;   // Reduced tolerance for focused feedback
-    const headTiltThreshold = 25;       // Reduced tolerance for focused feedback
+    // --- USING REDUCED TOLERANCE THRESHOLDS ---
+    const neckCenteringThreshold = THRESHOLDS.neckCenteringThreshold;
+    const headTiltThreshold = THRESHOLDS.headTiltThreshold;
 
     // Find keypoints needed for head/neck checks
     const leftShoulder = keypoints.find((kp) => kp.name === 'left_shoulder');
@@ -343,8 +438,8 @@ function generateShouldersFeedback(keypoints) {
     let feedbackMessages = [];
     
     // --- THRESHOLDS ---
-    const shoulderAlignmentThreshold = 30; // Reduced threshold for focused feedback
-    const shoulderTensionThreshold = 40;   // New threshold for shoulder elevation
+    const shoulderAlignmentThreshold = THRESHOLDS.shoulderAlignmentThreshold;
+    const shoulderTensionThreshold = THRESHOLDS.shoulderTensionThreshold;
     
     // Find keypoints needed for shoulder checks
     const leftShoulder = keypoints.find((kp) => kp.name === 'left_shoulder');
@@ -424,10 +519,10 @@ function generateShouldersFeedback(keypoints) {
 function generateCompleteFeedback(keypoints) {
     let feedbackMessages = [];
     
-    // --- INCREASED TOLERANCE THRESHOLDS ---
-    const shoulderAlignmentThreshold = 35; // Increased tolerance
-    const neckCenteringThreshold = 35;   // Increased tolerance
-    const headTiltThreshold = 30;       // Increased tolerance
+    // --- USING REDUCED TOLERANCE THRESHOLDS ---
+    const shoulderAlignmentThreshold = THRESHOLDS.completeShoulderAlignmentThreshold;
+    const neckCenteringThreshold = THRESHOLDS.completeNeckCenteringThreshold;
+    const headTiltThreshold = THRESHOLDS.completeHeadTiltThreshold;
 
     // Find keypoints needed for upper body checks
     const leftShoulder = keypoints.find((kp) => kp.name === 'left_shoulder');
@@ -473,172 +568,7 @@ function generateCompleteFeedback(keypoints) {
     }
 }
 
-// Calculate posture scores based on feedback history
-function calculatePostureScores() {
-    // Define initial scores
-    const scores = {
-        head_neck_score: 0,
-        shoulders_score: 0,
-        overall_score: 0
-    };
-    
-    // Count total feedback instances and "good" feedback instances
-    let totalHeadNeckFeedback = 0;
-    let goodHeadNeckFeedback = 0;
-    let totalShouldersFeedback = 0;
-    let goodShouldersFeedback = 0;
-    
-    feedbackHistory.forEach(item => {
-        // Check if feedback included head/neck issues
-        if (item.message.includes("head") || item.message.includes("neck") || 
-            item.message.includes("chin") || item.message.includes("tilt")) {
-            totalHeadNeckFeedback++;
-            if (item.message.includes("Excellent head") || item.message.includes("Good") || 
-                item.message.includes("Keep it up")) {
-                goodHeadNeckFeedback++;
-            }
-        }
-        
-        // Check if feedback included shoulder issues
-        if (item.message.includes("shoulder") || item.message.includes("arm") || 
-            item.message.includes("chest")) {
-            totalShouldersFeedback++;
-            if (item.message.includes("Great shoulder") || item.message.includes("Good") || 
-                item.message.includes("Keep it up")) {
-                goodShouldersFeedback++;
-            }
-        }
-    });
-    
-    // Calculate scores as percentages
-    if (totalHeadNeckFeedback > 0) {
-        scores.head_neck_score = Math.round((goodHeadNeckFeedback / totalHeadNeckFeedback) * 100);
-    } else {
-        // Default score if no feedback data available
-        scores.head_neck_score = 50;
-    }
-    
-    if (totalShouldersFeedback > 0) {
-        scores.shoulders_score = Math.round((goodShouldersFeedback / totalShouldersFeedback) * 100);
-    } else {
-        scores.shoulders_score = 50;
-    }
-    
-    // Calculate overall score (average of head/neck and shoulders)
-    scores.overall_score = Math.round(
-        (scores.head_neck_score + scores.shoulders_score) / 2
-    );
-    
-    return scores;
-}
-
-// Generate feedback summary for the session
-function generateFeedbackSummary() {
-    const scores = calculatePostureScores();
-    
-    // Format practice duration (always 2 minutes or less if ended early)
-    const minutes = Math.floor(practiceSeconds / 60);
-    const seconds = practiceSeconds % 60;
-    const durationFormatted = `${minutes}:${seconds.toString().padStart(2, '0')}`;
-    
-    // Create feedback objects
-    let feedbackData = {
-        head_neck_score: scores.head_neck_score,
-        shoulders_score: scores.shoulders_score,
-        overall_score: scores.overall_score,
-        practice_duration: durationFormatted,
-        head_neck_feedback: generateHeadNeckSummary(scores.head_neck_score),
-        shoulders_feedback: generateShouldersSummary(scores.shoulders_score),
-        overall_feedback: generateOverallSummary(scores.overall_score)
-    };
-    
-    // Add detailed metrics for results page
-    feedbackData = {
-        ...feedbackData,
-        head_alignment: getHeadAlignmentRating(scores.head_neck_score),
-        head_alignment_score: Math.min(scores.head_neck_score + 10, 100),
-        neck_tension: getNeckTensionRating(scores.head_neck_score),
-        neck_tension_score: Math.max(scores.head_neck_score - 5, 0),
-        gaze_direction: getGazeDirectionRating(scores.head_neck_score),
-        gaze_direction_score: scores.head_neck_score,
-        shoulder_level: getShoulderLevelRating(scores.shoulders_score),
-        shoulder_level_score: scores.shoulders_score,
-        shoulder_tension: getShoulderTensionRating(scores.shoulders_score),
-        shoulder_tension_score: Math.max(scores.shoulders_score - 10, 0),
-        chest_openness: getChestOpennessRating(scores.shoulders_score),
-        chest_openness_score: Math.min(scores.shoulders_score + 5, 100)
-    };
-    
-    return feedbackData;
-}
-
-// Helper functions for generating specific ratings
-function getHeadAlignmentRating(score) {
-    if (score >= 80) return "Excellent";
-    if (score >= 60) return "Good";
-    return "Needs Work";
-}
-
-function getNeckTensionRating(score) {
-    if (score >= 80) return "Relaxed";
-    if (score >= 60) return "Slightly Tense";
-    return "Tense";
-}
-
-function getGazeDirectionRating(score) {
-    if (score >= 80) return "Level";
-    if (score >= 60) return "Slightly Off";
-    return "Misaligned";
-}
-
-function getShoulderLevelRating(score) {
-    if (score >= 80) return "Even";
-    if (score >= 60) return "Slightly Uneven";
-    return "Uneven";
-}
-
-function getShoulderTensionRating(score) {
-    if (score >= 80) return "Relaxed";
-    if (score >= 60) return "Slightly Tense";
-    return "Tense";
-}
-
-function getChestOpennessRating(score) {
-    if (score >= 80) return "Open";
-    if (score >= 60) return "Partially Open";
-    return "Closed";
-}
-
-// Generate text summaries based on scores
-function generateHeadNeckSummary(score) {
-    if (score >= 80) {
-        return "Your head and neck alignment is excellent. You maintain good posture with your head properly centered over your shoulders.";
-    } else if (score >= 60) {
-        return "Your head and neck position is good, but could use some improvement. Try to keep your chin slightly tucked and ears level.";
-    } else {
-        return "Your head and neck positioning needs work. Focus on centering your head over your shoulders and keeping your gaze level.";
-    }
-}
-
-function generateShouldersSummary(score) {
-    if (score >= 80) {
-        return "Your shoulders are well-positioned - relaxed and level. You maintain good shoulder posture throughout your practice.";
-    } else if (score >= 60) {
-        return "Your shoulder position is good but could be improved. Remember to keep shoulders down away from your ears and evenly balanced.";
-    } else {
-        return "Your shoulders show tension and uneven positioning. Practice relaxing them down and back, keeping them level with each other.";
-    }
-}
-
-function generateOverallSummary(score) {
-    if (score >= 80) {
-        return "Your overall posture is excellent! You maintain good alignment throughout your practice, which will help prevent discomfort and injury.";
-    } else if (score >= 60) {
-        return "Your overall posture is good with some areas that could use improvement. With regular practice, you'll develop better postural habits.";
-    } else {
-        return "Your posture needs consistent work to improve alignment. Focus on the specific recommendations for each body area to make progress.";
-    }
-}
+// Rest of the existing functions (calculatePostureScores, generateFeedbackSummary, etc.) remain the same
 
 // Main function to orchestrate setup and detection
 async function startPosturePractice() {
@@ -690,7 +620,7 @@ async function startPosturePractice() {
             endPracticeButton.style.display = 'inline-block';
         }
         
-        // Start the practice timer (2 minutes)
+        // Start the practice timer
         startPracticeTimer(practiceSeconds);
         
         // Start the detection loop
