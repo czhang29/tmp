@@ -51,6 +51,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (timerSelectionContainer) {
         console.log("Timer selection page detected");
         setupTimerSelection();
+        return; // Exit early if on timer selection page
     }
     
     // Check if we're on the timer selection page
@@ -103,7 +104,58 @@ document.addEventListener('DOMContentLoaded', function() {
     if (audioToggle) {
         audioToggle.addEventListener('click', toggleAudio);
     }
+    
+    // Auto-start practice when we're on a practice page (not on selection or countdown pages)
+    if (video && !document.getElementById('fullscreen-countdown') && !document.getElementById('timer-selection')) {
+        console.log("Auto-starting practice session...");
+        feedback.innerHTML = "Starting session automatically...";
+        
+        // Automatically start the practice session with no initial countdown
+        autoStartPractice();
+    }
 });
+
+// New function to auto-start practice without the initial countdown
+async function autoStartPractice() {
+    // Setup Camera
+    const videoElement = await setupCamera();
+    if (!videoElement) {
+        return; // Stop if camera failed
+    }
+    videoElement.play(); // Ensure video plays
+
+    // Load Model
+    await loadModel(); // Wait for the model to load
+    if (!detector) {
+        feedback.innerHTML = "Failed to load analysis model. Please try again.";
+        return; // Stop if model failed
+    }
+
+    // Start Detection Loop
+    lastFeedbackTime = Date.now() - feedbackInterval + 2000; // Give feedback soon after start
+    console.log("Starting detection loop...");
+    feedback.innerHTML = "Starting posture analysis...";
+    
+    // Set practice start flag
+    practiceStartTime = Date.now();
+    isAnalyzing = true;
+
+    // Clear previous loop if any
+    if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+    }
+    
+    // Show end practice button
+    if (endPracticeButton) {
+        endPracticeButton.style.display = 'inline-block';
+    }
+    
+    // Start the practice timer
+    startPracticeTimer(practiceSeconds);
+    
+    // Start the detection loop
+    detectPose();
+}
 
 // Setup timer selection
 function setupTimerSelection() {
@@ -313,6 +365,52 @@ async function loadModel() {
         }
     }
      return detector;
+}
+
+// Function to draw keypoints on the canvas
+function drawKeypoints(ctx, keypoints) {
+  keypoints.forEach((keypoint) => {
+    if (keypoint.score >= 0.3) { // Only draw keypoints that are confidently detected
+      const { x, y } = keypoint;
+      
+      // Draw keypoint
+      ctx.beginPath();
+      ctx.arc(x, y, 5, 0, 2 * Math.PI);
+      ctx.fillStyle = 'aqua';
+      ctx.fill();
+    }
+  });
+}
+
+// Function to draw skeleton connecting the keypoints
+function drawSkeleton(ctx, keypoints) {
+  // Define connections between keypoints (pairs of indices)
+  const connections = [
+    ['nose', 'left_eye'], ['nose', 'right_eye'], 
+    ['left_eye', 'left_ear'], ['right_eye', 'right_ear'],
+    ['left_shoulder', 'right_shoulder'], 
+    ['left_shoulder', 'left_elbow'], ['right_shoulder', 'right_elbow'],
+    ['left_elbow', 'left_wrist'], ['right_elbow', 'right_wrist'],
+    ['left_shoulder', 'left_hip'], ['right_shoulder', 'right_hip'],
+    ['left_hip', 'right_hip'],
+    ['left_hip', 'left_knee'], ['right_hip', 'right_knee'],
+    ['left_knee', 'left_ankle'], ['right_knee', 'right_ankle']
+  ];
+  
+  // Draw each connection
+  connections.forEach(([from, to]) => {
+    const fromPoint = keypoints.find(kp => kp.name === from);
+    const toPoint = keypoints.find(kp => kp.name === to);
+    
+    if (fromPoint && toPoint && fromPoint.score >= 0.3 && toPoint.score >= 0.3) {
+      ctx.beginPath();
+      ctx.moveTo(fromPoint.x, fromPoint.y);
+      ctx.lineTo(toPoint.x, toPoint.y);
+      ctx.strokeStyle = 'lime';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+    }
+  });
 }
 
 // Detect poses in real-time
@@ -600,7 +698,85 @@ function generateCompleteFeedback(keypoints) {
     }
 }
 
-// Rest of the existing functions (calculatePostureScores, generateFeedbackSummary, etc.) remain the same
+// Function to generate feedback summary with accurate practice duration
+function generateFeedbackSummary() {
+  // Calculate scores based on feedback history
+  let headNeckScore = 75; // Default scores
+  let shouldersScore = 60;
+  let overallScore = 68;
+  let headNeckFeedback = "Your head and neck position is good, but could use some improvement.";
+  let shouldersFeedback = "Your shoulders show some tension. Try to relax them down and away from your ears.";
+  let overallFeedback = "Your overall posture is good with some areas for improvement.";
+  
+  // If we have feedback history, analyze it for better feedback
+  if (feedbackHistory.length > 0) {
+    // Count instances of different feedback types
+    const headNeckProblems = feedbackHistory.filter(item => 
+      item.message.toLowerCase().includes('head') || 
+      item.message.toLowerCase().includes('neck') ||
+      item.message.toLowerCase().includes('chin')
+    ).length;
+    
+    const shoulderProblems = feedbackHistory.filter(item => 
+      item.message.toLowerCase().includes('shoulder') || 
+      item.message.toLowerCase().includes('arm')
+    ).length;
+    
+    // Calculate scores based on problem frequency
+    const totalFeedbacks = feedbackHistory.length;
+    if (totalFeedbacks > 0) {
+      // Inverse scoring - fewer problems means higher score
+      headNeckScore = Math.max(50, 100 - (headNeckProblems / totalFeedbacks * 100));
+      shouldersScore = Math.max(50, 100 - (shoulderProblems / totalFeedbacks * 100));
+      overallScore = Math.round((headNeckScore + shouldersScore) / 2);
+      
+      // Generate personalized feedback
+      if (headNeckScore >= 80) {
+        headNeckFeedback = "Excellent head and neck positioning throughout your practice!";
+      } else if (headNeckScore >= 60) {
+        headNeckFeedback = "Your head and neck position is good, but could use some improvement. Try to keep your chin slightly tucked and ears level.";
+      } else {
+        headNeckFeedback = "Your head and neck alignment needs work. Focus on centering your head over your shoulders and maintaining a level gaze.";
+        }
+      if (shouldersScore >= 80) {
+        shouldersFeedback = "Great shoulder positioning! You maintained relaxed, level shoulders.";
+      } else if (shouldersScore >= 60) {
+        shouldersFeedback = "Your shoulders show some tension. Practice relaxing them down and back, keeping them level with each other.";
+      } else {
+        shouldersFeedback = "Your shoulders need significant improvement. Focus on keeping them relaxed, level, and away from your ears.";
+      }
+      
+      if (overallScore >= 80) {
+        overallFeedback = "Excellent posture overall! Keep up the good work and continue practicing regularly.";
+      } else if (overallScore >= 60) {
+        overallFeedback = "Your overall posture is good with some areas that could use improvement. With regular practice, you'll develop better postural habits.";
+      } else {
+        overallFeedback = "Your posture needs significant improvement. Focus on the specific feedback areas and try shorter, more frequent practice sessions.";
+      }
+    }
+  }
+  
+  // Calculate actual practice duration based on practice start time
+  let practiceDuration = "2:00"; // Default fallback
+  if (practiceStartTime) {
+    const practiceDurationMs = Date.now() - practiceStartTime;
+    const minutes = Math.floor(practiceDurationMs / 60000);
+    const seconds = Math.floor((practiceDurationMs % 60000) / 1000);
+    practiceDuration = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+  }
+  
+  // Return the feedback data
+  return {
+    head_neck_score: Math.round(headNeckScore),
+    shoulders_score: Math.round(shouldersScore),
+    overall_score: Math.round(overallScore),
+    head_neck_feedback: headNeckFeedback,
+    shoulders_feedback: shouldersFeedback,
+    overall_feedback: overallFeedback,
+    practice_duration: practiceDuration,
+    practice_focus: practiceFocus
+  };
+}
 
 // Main function to orchestrate setup and detection
 async function startPosturePractice() {

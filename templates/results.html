@@ -5,12 +5,8 @@
     <h2 id="lesson_title">Your Posture Results</h2>
     
     <div class="results-container">
-        <!-- Results Header with Avatar -->
+        <!-- Results Header -->
         <div class="results-header mb-4 text-center">
-            <div class="avatar-container">
-                <img src="{{ url_for('static', filename='images/posture_avatar.png') }}" alt="Posture Avatar" class="posture-avatar">
-                <div class="avatar-label">Your Current Posture</div>
-            </div>
             <h3 class="mt-3">
                 {% if session.get('practice_focus') == 'head_neck' %}
                     Head & Neck Assessment
@@ -182,7 +178,7 @@
             <a href="{{ url_for('practice') }}" class="btn btn-primary">Practice Again</a>
             {% endif %}
             
-            <a href="{{ url_for('homepage') }}" class="btn btn-outline-secondary">Return Home</a>
+            <a href="{{ url_for('homepage') }}" class="btn btn-secondary">Return Home</a>
         </div>
     </div>
 </div>

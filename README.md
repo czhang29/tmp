@@ -5,14 +5,26 @@ Welcome to PerfectPosture, a website designed to help you improve your posture t
 ## TODO's
 
 - [ ] Replace placeholder images with the desired images.
-- [ ] Add the following pages:
-  - [ ] Practice Feedback Summary: provides users with feedback on their practice (refer to the deck)
-  - [ ] Results page: presents final results and possible recommendations to users (refer to the deck)
-- [ ] Integrate real-time feedback practice into the following pages:
-  - [ ] Head & Neck Position: ensure feedback focuses solely on the head and neck
-  - [ ] Shoulders: ensure feedback focuses solely on the shoulders
-- [ ] Implement a countdown timer to allow users to adjust themselves.
-- [ ] Enhance real-time feedback parameters for greater accuracy.
-- [ ] Add a back button so user can go back and forth from pages.
-- [ ] Add button in homepage (and navbar?) to take the user to the active practice.
+- [x] Add the following pages:
+  - [x] Practice Feedback Summary: provides users with feedback on their practice (refer to the deck)
+  - [x] Results page: presents final results and possible recommendations to users (refer to the deck)
+- [x] Integrate real-time feedback practice into the following pages:
+  - [x] Head & Neck Position: ensure feedback focuses solely on the head and neck
+  - [x] Shoulders: ensure feedback focuses solely on the shoulders
+- [x] Implement a countdown timer to allow users to adjust themselves.
+- [x] Enhance real-time feedback parameters for greater accuracy.
+- [x] Add a back button so user can go back and forth from pages.
+- [x] Add button in homepage (and navbar?) to take the user to the active practice.
 - [ ] Decide on UI design color schemes.
+
+## Completed Features (Not Listed Above)
+
+- [x] Auto-start camera session after countdown without requiring additional user input
+- [x] Real-time pose detection with visual feedback using TensorFlow.js and MoveNet model
+- [x] Accurate practice duration tracking for session summaries
+- [x] Audio alerts for posture corrections with mute toggle option
+- [x] Custom timer selection for practice sessions, including no-limit option
+- [x] Detailed posture analysis metrics with visual progress indicators
+- [x] Personalized posture recommendations based on practice focus
+- [x] Responsive design for different screen sizes
+- [x] Progress tracking sidebar for guided learning flow
