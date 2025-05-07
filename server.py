@@ -135,6 +135,8 @@ def start_countdown():
         practice_duration_seconds = request.form.get('practice_duration_seconds', '120')
         practice_focus = request.form.get('practice_focus', 'all')
         
+        print(f"Selected timer: {practice_duration_seconds}, focus: {practice_focus}")
+        
         # Store in session
         session['practice_duration_seconds'] = int(practice_duration_seconds)
         session['practice_focus'] = practice_focus
@@ -200,6 +202,22 @@ def practice_shoulders_session():
                            progress_percent=progress_percent,
                            practice_duration_seconds=practice_duration_seconds)
 
+@app.route('/countdown')
+def countdown():
+    """Show the countdown page"""
+    # Get practice focus from session
+    practice_focus = session.get('practice_focus', 'all')
+    
+    # Determine redirect URL based on practice focus
+    if practice_focus == 'head_neck':
+        redirect_url = url_for('practice_head_neck_session')
+    elif practice_focus == 'shoulders':
+        redirect_url = url_for('practice_shoulders_session')
+    else:
+        redirect_url = url_for('practice_session')
+    
+    return render_template('countdown.html', redirect_url=redirect_url)
+
 @app.route('/save_feedback', methods=['POST'])
 def save_feedback():
     """API endpoint to save practice feedback data"""
@@ -245,9 +263,13 @@ def feedback_summary():
         
         # Get practice duration from session (default to 2 minutes)
         practice_duration_seconds = session.get('practice_duration_seconds', 120)
-        minutes = practice_duration_seconds // 60
-        seconds = practice_duration_seconds % 60
-        session['practice_duration'] = f"{minutes}:{seconds:02d}"
+        # Handle "No time limit" case
+        if practice_duration_seconds == 0:
+            session['practice_duration'] = "No time limit"
+        else:
+            minutes = practice_duration_seconds // 60
+            seconds = practice_duration_seconds % 60
+            session['practice_duration'] = f"{minutes}:{seconds:02d}"
         
         session['overall_feedback'] = "Your overall posture is good with some areas that could use improvement. With regular practice, you'll develop better postural habits."
     

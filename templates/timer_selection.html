@@ -9,8 +9,8 @@
     </div>
     
     <!-- Timer Selection Options -->
-    <div class="timer-selection">
-        <div class="timer-option" data-seconds="120">2 min</div>
+    <div id="timer-selection" class="timer-selection">
+        <div class="timer-option selected" data-seconds="120">2 min</div>
         <div class="timer-option" data-seconds="240">4 min</div>
         <div class="timer-option" data-seconds="360">6 min</div>
         <div class="timer-option" data-seconds="480">8 min</div>
@@ -22,9 +22,9 @@
     
     <!-- Hidden form to submit the selection -->
     <form action="{{ url_for('start_countdown') }}" method="post" class="text-center mt-5">
-        <input type="hidden" id="selected-timer" name="practice_duration_seconds" value="">
+        <input type="hidden" id="selected-timer" name="practice_duration_seconds" value="120">
         <input type="hidden" name="practice_focus" value="{{ session.get('practice_focus', 'all') }}">
-        <button type="submit" id="continue-button" class="btn btn-primary btn-lg" disabled>Continue</button>
+        <button type="submit" id="continue-button" class="btn btn-primary btn-lg">Continue</button>
     </form>
     
     <!-- Information Card -->
@@ -54,6 +54,10 @@
     </div>
 </div>
 
-<!-- Load the script last -->
+<!-- Import Font Awesome for audio icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+<!-- Load the script -->
 <script src="{{ url_for('static', filename='scripts.js') }}"></script>
+<script src="{{ url_for('static', filename='timer-countdown.js') }}"></script>
 {% endblock %}

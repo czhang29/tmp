@@ -46,6 +46,12 @@ const practiceTimerElement = document.getElementById('practice-timer');
 document.addEventListener('DOMContentLoaded', function() {
     // Setup audio element for feedback
     feedbackSound = new Audio('/static/sounds/ding.mp3');
+
+    const timerSelectionContainer = document.querySelector('.timer-selection');
+    if (timerSelectionContainer) {
+        console.log("Timer selection page detected");
+        setupTimerSelection();
+    }
     
     // Check if we're on the timer selection page
     if (document.getElementById('timer-selection')) {
@@ -101,10 +107,28 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Setup timer selection
 function setupTimerSelection() {
+    console.log("Setting up timer selection");
+    
     const timerOptions = document.querySelectorAll('.timer-option');
+    const continueButton = document.getElementById('continue-button');
+    
+    if (!timerOptions || !continueButton) {
+        console.error("Could not find timer options or continue button");
+        return;
+    }
+    
+    // Default to 2 min option selected
+    const defaultOption = document.querySelector('.timer-option[data-seconds="120"]');
+    if (defaultOption) {
+        defaultOption.classList.add('selected');
+        document.getElementById('selected-timer').value = "120";
+        continueButton.disabled = false;
+    }
     
     timerOptions.forEach(option => {
         option.addEventListener('click', function() {
+            console.log("Timer option clicked:", this.getAttribute('data-seconds'));
+            
             // Remove selected class from all options
             timerOptions.forEach(opt => opt.classList.remove('selected'));
             
@@ -116,9 +140,17 @@ function setupTimerSelection() {
             document.getElementById('selected-timer').value = selectedTime;
             
             // Enable the continue button
-            document.getElementById('continue-button').disabled = false;
+            continueButton.disabled = false;
         });
     });
+    
+    // Debug check for the form submission
+    const form = document.querySelector('form[action*="start_countdown"]');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            console.log("Form submitted with value:", document.getElementById('selected-timer').value);
+        });
+    }
 }
 
 // Start fullscreen countdown
